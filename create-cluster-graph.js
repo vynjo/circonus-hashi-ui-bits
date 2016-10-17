@@ -1,5 +1,15 @@
 'use strict';
 
+
+
+var stdio = require('stdio');
+var ops = stdio.getopt({
+    'cID': {key: 'c', mandatory: true, description: 'Metric Cluster ID'},
+    'token': {key: 't', mandatory: true, description: 'Circonus AP Token'},
+    'title': {args: 1, mandatory: true},
+    'tags': {key: 'o'}
+});
+
 const args = process.argv;
 console.log(args);
 
@@ -42,7 +52,7 @@ const cluster_graph_config = {
     "title": "Nomad Client Disk - Available TEST2"
 };
 
-api.setup('7339c41b-48ab-617e-8859-c60ab96edb90', 'Nomad');
+api.setup(ops.token, 'Nomad');
 api.post('/graph', cluster_graph_config, (code, error, body) => {
     if (error !== null) {
         console.error(error);
