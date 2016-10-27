@@ -1,24 +1,36 @@
 'use strict';
 
 const api = require('circonusapi2');
-
-/* var Type = require('type-of-is'); */
-
+var https = require('http');
 var stdio = require('stdio');
+
 var ops = stdio.getopt({
-    'string': {key: 's', args: 1, mandatory: true, description: 'Allocation ID'},
-    'token': {key: 't', args: 1, mandatory: true, description: 'Circonus AP Token'},
+    'nomad-server-ip': {key: 'i', args: 1, mandatory: true, description: 'IP of Nomad API Server'},
     'plan': {key: 'p', args: 1, type: Boolean, description: 'Show Plan but do not delete'}
 });
 
 const args = process.argv;
 
+var allocations = [];
+
+https.request('http://104.196.129.150:4646/v1/allocations', function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+        console.log(body) // Print the google web page.
+     }
+     console.log(body);
+})
+
+
+
+/*
 var metric_list = [];
 var metric_list_str = "";
 var check_id_path = null;
 var endpoint = "/metric?search=(active:1)" + ops.string +"&size=100";
 
-api.setup(ops.token, 'Nomad');
+/* console.log(endpoint) */
+
+/*api.setup(ops.token, 'Nomad');
 
 api.get(endpoint, null, (code, error, body) => {
     if (error !== null) {
@@ -54,3 +66,4 @@ api.get(endpoint, null, (code, error, body) => {
 	} else 
 		console.log("No metrics were found");
 });
+*/
