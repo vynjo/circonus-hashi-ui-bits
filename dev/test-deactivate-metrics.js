@@ -1,36 +1,24 @@
 'use strict';
 
 const api = require('circonusapi2');
-var https = require('http');
-var stdio = require('stdio');
 
+/* var Type = require('type-of-is'); */
+
+var stdio = require('stdio');
 var ops = stdio.getopt({
-    'nomad-server-ip': {key: 'i', args: 1, mandatory: true, description: 'IP of Nomad API Server'},
+    'string': {key: 's', args: 1, mandatory: true, description: 'Allocation ID'},
+    'token': {key: 't', args: 1, mandatory: true, description: 'Circonus AP Token'},
     'plan': {key: 'p', args: 1, type: Boolean, description: 'Show Plan but do not delete'}
 });
 
 const args = process.argv;
 
-var allocations = [];
-
-https.request('http://104.196.129.150:4646/v1/allocations', function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-        console.log(body) // Print the google web page.
-     }
-     console.log(body);
-})
-
-
-
-/*
 var metric_list = [];
 var metric_list_str = "";
 var check_id_path = null;
 var endpoint = "/metric?search=(active:1)" + ops.string +"&size=100";
 
-/* console.log(endpoint) */
-
-/*api.setup(ops.token, 'Nomad');
+api.setup(ops.token, 'Nomad');
 
 api.get(endpoint, null, (code, error, body) => {
     if (error !== null) {
@@ -48,12 +36,15 @@ api.get(endpoint, null, (code, error, body) => {
 			metric_list.push('{"status": "available" , "name" : "' + body[item]._metric_name + '", "type": "' + body[item]._metric_type + '"}');
 			console.log("Metric:", body[item]._metric_name);
 		}
+
 		if (ops.plan == true) {
 			console.log("End of plan");
 		} else {
 			console.log("Initating Deactivation of", body.length, " metrics...");
 		 	var metric_list_str = '{ "metrics" : [' + metric_list + ']}';
 			var metric_json = JSON.parse(metric_list_str);
+			console.log(metric_json);
+/*
 			api.put(check_id_path, metric_json, (code, error, body) => {
 			    if (error !== null) {
 			        console.error(error);
@@ -62,8 +53,11 @@ api.get(endpoint, null, (code, error, body) => {
 			    console.dir(body);
 		
 			});
+*/
 		};
 	} else 
 		console.log("No metrics were found");
 });
-*/
+
+// Example:
+//  node test-deactivate-metrics.js -t 7339c41b-48ab-617e-8859-c60ab96edb90 -s '*422f1f87-792a-cce3-97dd-3d15ade35619*' -p

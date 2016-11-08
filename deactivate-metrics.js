@@ -36,6 +36,7 @@ api.get(endpoint, null, (code, error, body) => {
 			metric_list.push('{"status": "available" , "name" : "' + body[item]._metric_name + '", "type": "' + body[item]._metric_type + '"}');
 			console.log("Metric:", body[item]._metric_name);
 		}
+		console.log(metric_list)
 		if (ops.plan == true) {
 			console.log("End of plan");
 		} else {
