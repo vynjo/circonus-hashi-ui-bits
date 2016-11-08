@@ -178,7 +178,29 @@ func getAllocationMetrics(id string) ([]circonusMetrics, error) {
 	return metrics, nil
 }
 
-func deactivateMetrics(allocID string) error {
+func deactivateMetrics(allocation Allocation) error {
+
+	log.Printf("Removing metrics for %s on %s (%s:%s)", allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
+
+	allocationMetrics, err := getAllocationMetrics(allocation.ID)
+	if err != nil {
+		return err
+	}
+
+	if len(allocationMetrics) == 0 {
+		log.Printf("skipping allocation %s, 0 metrics.", allocation.ID)
+		return nil
+	}
+
+	log.Printf("allocation %s has %d metrics", allocation.ID, len(allocationMetrics))
+
+	return nil
+}
+
+var circapi *api.API
+
+func init() {
+	var err error
 
 	cfg := &api.Config{}
 
@@ -190,23 +212,12 @@ func deactivateMetrics(allocID string) error {
 	// just so we can get some debug output (delete or set to false to stop debug messages)
 	cfg.Debug = true
 
-	var err error
 	circapi, err = api.NewAPI(cfg)
 	if err != nil {
-		return err
+		log.Printf("ERROR: allocating Circonus API %v\n", err)
+		os.Exit(1)
 	}
-
-	allocationMetrics, err := getAllocationMetrics(allocID)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("allocation %s has %d metrics", allocID, len(allocationMetrics))
-
-	return nil
 }
-
-var circapi *api.API
 
 func main() {
 
@@ -222,8 +233,7 @@ func main() {
 	}
 
 	for _, allocation := range completedAllocations {
-		log.Printf("Removing metrics for %s on %s (%s:%s)", allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
-		deactivateMetrics(allocation.ID)
+		deactivateMetrics(allocation)
 	}
 
 	// cfg := &circapi.Config{}
