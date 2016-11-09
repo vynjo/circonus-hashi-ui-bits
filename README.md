@@ -3,30 +3,33 @@
 
 Current tools include:
 
-<h3>GO Version for:</h3>
-<p>- Deactivation of "Complete" Allocations.</p>
+### GO Version for:
+Deactivation of "Complete" Allocations.
    **go/deactivate-complete-allocs.go**
 
 and Linux executable - **deactivate-complete-allocs**
-<p>Requires environment variables or Parameters:</p>
-      CIRCONUS_API_TOKEN="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
-      CIRCONUS_API_APP="Name_of_App"
-      CIRCONUS_API_URL="https://api.circonus.com/v2/"
-      NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
+
+Requires environment variables or Parameters:
+- CIRCONUS_API_TOKEN="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
+-     	CIRCONUS_API_APP="Name_of_App"
+-     	CIRCONUS_API_URL="https://api.circonus.com/v2/"
+-     	NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
+
       
 PARAMETERS:
-- apiurl string
-    	Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)
-- app string
-    	Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)
+
+- apiurl
+    	(string) Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)
+- app 
+    	(string) Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)
 - debug
     	Enable Circonus API debugging
-- key string
-    	Circonus API Token Key [none] (CIRCONUS_API_KEY)
-- nomadurl string
-    	Base Nomad API URL [http://localhost:4646/] (NOMAD_API_URL)
+- key
+    	(string) Circonus API Token Key [none] (CIRCONUS_API_KEY)
+- nomadurl
+    	(string) Base Nomad API URL [http://localhost:4646/] (NOMAD_API_URL)
 
- <h3> Node.js versions for</h3>
+### Node.js versions for
 - node/create-cluster.js
 - node/deactivate-complete-lost-allocs.js
 - node/deactivate-metrics.js
