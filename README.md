@@ -15,12 +15,12 @@ and Linux executable - **deactivate-complete-allocs**
       NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
 
  <h3> Node.js versions for</h3>
-- create-cluster.js
-- deactivate-complete-lost-allocs.js
-- deactivate-metrics.js
-- deactivate-complete-allocs.js
-- deactivate-lost-allocs.js
-- find-running-allocations.js
+- node/create-cluster.js
+- node/deactivate-complete-lost-allocs.js
+- node/deactivate-metrics.js
+- node/deactivate-complete-allocs.js
+- node/deactivate-lost-allocs.js
+- node/find-running-allocations.js
 
 Requires circonusapi2 and stdio
 - npm install circonusapi2
