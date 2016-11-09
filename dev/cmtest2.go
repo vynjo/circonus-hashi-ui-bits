@@ -145,7 +145,6 @@ func deactivateMetrics(checkBundleID string, metricList checkBundleMetricList) e
 
 	log.Println("---")
 
-	os.Exit(0)
 	return nil
 }
 
@@ -221,7 +220,7 @@ func init() {
 	}
 
 	// just so we can get some debug output (delete or set to false to stop debug messages)
-	cfg.Debug = true
+	//cfg.Debug = true
 
 	circapi, err = api.NewAPI(cfg)
 	if err != nil {
