@@ -40,7 +40,7 @@ type metricSearchResult struct {
 }
 
 type checkBundleMetricList struct {
-	metrics []checkBundleMetric `json:"metrics"`
+	Metrics []checkBundleMetric `json:"metrics"`
 }
 
 type checkBundleMetric struct {
@@ -123,16 +123,10 @@ func getAllocationMetrics(id string) ([]metricSearchResult, error) {
 func deactivateMetrics(checkBundleID string, metricList checkBundleMetricList) error {
 	reqPath := fmt.Sprintf("/check_bundle_metrics/%s", checkBundleID)
 
-	log.Printf("%+v", metricList)
-
 	metricsJSON, err := json.Marshal(metricList)
 	if err != nil {
 		return err
 	}
-
-	os.Stdout.Write(metricsJSON)
-
-	os.Exit(0)
 
 	response, err := circapi.Put(reqPath, metricsJSON)
 	if err != nil {
