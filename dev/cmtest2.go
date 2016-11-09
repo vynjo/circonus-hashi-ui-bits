@@ -31,31 +31,24 @@ type Allocation struct {
 	ClientStatus string
 }
 
-// Used to Parse results from the Circonus API when searching for Metrics which correspond to an Allocation
-type circonusMetrics struct {
-	Name          string `json:"_metric_name"`
-	Active        bool   `json:"_active"`
-	CheckBundleID string `json:"_check_bundle"`
+type metricSearchResult struct {
+	CheckBundleID string   `json:"_check_bundle"`
+	Name          string   `json:"_metric_name"`
+	Type          string   `json:"_metric_type"`
+	Tags          []string `json:"tags"`
+	Units         string   `json:"units"`
 }
 
-// Used to create the modified Metric list, particularly the Status field which will be set to 'available'
-// type ModifiedMetrics struct {
-// 	Name       string `json:"name"`
-// 	Status     string `json:"status"`
-// 	MetricType string `json:"type"`
-// }
-
-// type circapi_response struct {
-// 	cid     string   `json:"_cid"`
-// 	metrics []string `json:"metrics"`
-// }
+type checkBundleMetric struct {
+	Name   string   `json:"name"`
+	Status string   `json:"status"`
+	Tags   []string `json:"tags"`
+	Type   string   `json:"type"`
+	Units  string   `json:"units"`
+}
 
 func getAllocations() ([]Allocation, error) {
-	// Get the current allocations (running, lost, complete) Hard coded to IP of Madsen's Nomad server. Will change.
-	// /v1/allocations
-
 	reqURL := nomadURL.String()
-
 	if !strings.Contains(reqURL, "v1/allocations") {
 		reqURL += "v1/allocations"
 	}
@@ -65,9 +58,7 @@ func getAllocations() ([]Allocation, error) {
 		return nil, err
 	}
 
-	//Wait for the full response
 	defer res.Body.Close()
-	// Read the entire body
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
@@ -100,7 +91,7 @@ func getCompletedAllocations() ([]Allocation, error) {
 	return completed, nil
 }
 
-func getAllocationMetrics(id string) ([]circonusMetrics, error) {
+func getAllocationMetrics(id string) ([]metricSearchResult, error) {
 
 	metricSearchURL := fmt.Sprintf("/metric?search=(active:1)*%s*", id)
 
@@ -109,7 +100,7 @@ func getAllocationMetrics(id string) ([]circonusMetrics, error) {
 		return nil, err
 	}
 
-	metrics := []circonusMetrics{}
+	metrics := []metricSearchResult{}
 
 	err = json.Unmarshal(metricsJSON, &metrics)
 	if err != nil {
@@ -121,8 +112,6 @@ func getAllocationMetrics(id string) ([]circonusMetrics, error) {
 
 func updateMetrics(allocation Allocation) error {
 
-	log.Printf("Removing metrics for %s on %s (%s:%s)", allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
-
 	allocationMetrics, err := getAllocationMetrics(allocation.ID)
 	if err != nil {
 		return err
@@ -133,7 +122,25 @@ func updateMetrics(allocation Allocation) error {
 		return nil
 	}
 
-	log.Printf("allocation %s has %d metrics", allocation.ID, len(allocationMetrics))
+	log.Printf("Deactivating %d metrics for %s on %s (%s:%s)", len(allocationMetrics), allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
+
+	checkBundleID := ""
+	metrics := []checkBundleMetric{}
+
+	for _, metric := range allocationMetrics {
+		if checkBundleID == "" {
+			checkBundleID = metric.CheckBundleID
+		}
+		metrics = append(metrics, checkBundleMetric{
+			Name:   metric.Name,
+			Status: "available",
+			Tags:   metric.Tags,
+			Type:   metric.Type,
+			Units:  metric.Units,
+		})
+	}
+
+	log.Printf("%s %+v\n", checkBundleID, metrics)
 
 	// build a list of metrics to deactivate
 	// err = deactivateMetrics(checkBundleID, metrics)
