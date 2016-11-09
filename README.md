@@ -5,7 +5,7 @@ Current tools include:
 
 <h3>GO Version for:</h3>
 <p>- Deactivation of "Complete" Allocations.
-<p>   go/deactivate-complete-allocs.go
+<p>   **go/deactivate-complete-allocs.go**
 <p>   and Linux executable - deactivate-complete-allocs
 <p>Requires environment variables:</p>
       CIRCONUS_API_TOKEN="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
