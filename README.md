@@ -13,4 +13,13 @@ Current tools include:
       CIRCONUS_API_URL="https://api.circonus.com/v2/"
       NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
 
-  Node.js versions for
+ <h3> Node.js versions for</h3>
+⋅⋅⋅create-cluster.js
+⋅⋅⋅deactivate-complete-lost-allocs.js
+⋅⋅⋅deactivate-metrics.js
+⋅⋅⋅deactivate-complete-allocs.js
+⋅⋅⋅deactivate-lost-allocs.js
+⋅⋅⋅find-running-allocations.js
+<p>Requires circonusapi2 and stdio
+ <p>           npm install circonusapi2
+ <p>           npm install stdio
