@@ -1,8 +1,8 @@
 package main
 
 import (
-	// "bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	// "time"
 
 	"github.com/circonus-labs/circonus-gometrics/api"
 )
@@ -39,10 +38,6 @@ type metricSearchResult struct {
 	Units         string   `json:"units"`
 }
 
-type checkBundleMetricList struct {
-	Metrics []checkBundleMetric `json:"metrics"`
-}
-
 type checkBundleMetric struct {
 	Name   string   `json:"name"`
 	Status string   `json:"status"`
@@ -50,6 +45,10 @@ type checkBundleMetric struct {
 	Type   string   `json:"type"`
 	Units  string   `json:"units"`
 	Result string   `json:"result,omitempty"`
+}
+
+type checkBundleMetricList struct {
+	Metrics []checkBundleMetric `json:"metrics"`
 }
 
 type checkBundleMetricResult struct {
@@ -195,32 +194,50 @@ var (
 	nomadURL *url.URL
 )
 
-func init() {
+func setup() {
 	var err error
+	var apiKey string
+	var apiApp string
+	var apiURL string
+	var nomadAPIURL string
+	var debug bool
+
+	flag.StringVar(&apiKey, "key", "", "Circonus API Token Key [none] (CIRCONUS_API_KEY)")
+	flag.StringVar(&apiApp, "app", "", "Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)")
+	flag.StringVar(&apiURL, "apiurl", "", "Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)")
+	flag.StringVar(&nomadAPIURL, "nomadurl", "", "Base Nomad API URL [http://localhost:4646/] (NOMAD_API_URL)")
+	flag.BoolVar(&debug, "debug", false, "Enable Circonus API debugging")
+
+	flag.Parse()
 
 	cfg := &api.Config{}
 
-	apiKey := os.Getenv("CIRCONUS_API_TOKEN")
 	if apiKey == "" {
-		log.Printf("CIRCONUS_API_TOKEN is not set, exiting.\n")
-		os.Exit(1)
+		apiKey = os.Getenv("CIRCONUS_API_KEY")
+		if apiKey == "" {
+			log.Printf("CIRCONUS_API_KEY is not set, exiting.\n")
+			os.Exit(1)
+		}
 	}
 	cfg.TokenKey = apiKey
 
-	apiApp := os.Getenv("CIRCONUS_API_APP")
-	if apiApp != "" {
-		cfg.TokenApp = apiApp
-	} else {
-		cfg.TokenApp = "nomad-metric-deactivator"
+	if apiApp == "" {
+		apiApp := os.Getenv("CIRCONUS_API_APP")
+		if apiApp == "" {
+			apiApp = "nomad-metrics-reaper"
+		}
 	}
+	cfg.TokenApp = apiApp
 
-	apiURL := os.Getenv("CIRCONUS_API_URL")
-	if apiURL != "" {
-		cfg.URL = apiURL
+	if apiURL == "" {
+		apiURL = os.Getenv("CIRCONUS_API_URL")
+		if apiURL == "" {
+			apiURL = "https://api.circonus.com/"
+		}
 	}
+	cfg.URL = apiURL
 
-	// just so we can get some debug output (delete or set to false to stop debug messages)
-	//cfg.Debug = true
+	cfg.Debug = debug
 
 	circapi, err = api.NewAPI(cfg)
 	if err != nil {
@@ -228,21 +245,22 @@ func init() {
 		os.Exit(1)
 	}
 
-	nomadurl := os.Getenv("NOMAD_URL")
-	if nomadurl == "" {
-		log.Printf("ERROR: NOMAD_URL not set, exiting.\n")
-		os.Exit(1)
+	if nomadAPIURL == "" {
+		nomadAPIURL = os.Getenv("NOMAD_API_URL")
+		if nomadAPIURL == "" {
+			nomadAPIURL = "http://localhost:4646/"
+		}
 	}
-
-	nomadURL, err = url.Parse(nomadurl)
+	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
-		log.Printf("ERROR: parsing NOMAD_URL %+v\n", err)
+		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
 		os.Exit(1)
 	}
-
 }
 
 func main() {
+
+	setup()
 
 	log.Println("Retrieving completed allocations from Nomad")
 
