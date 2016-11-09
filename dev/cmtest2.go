@@ -39,12 +39,22 @@ type metricSearchResult struct {
 	Units         string   `json:"units"`
 }
 
+type checkBundleMetricList struct {
+	metrics []checkBundleMetric `json:"metrics"`
+}
+
 type checkBundleMetric struct {
 	Name   string   `json:"name"`
 	Status string   `json:"status"`
 	Tags   []string `json:"tags"`
 	Type   string   `json:"type"`
 	Units  string   `json:"units"`
+	Result string   `json:"result,omitempty"`
+}
+
+type checkBundleMetricResult struct {
+	CID     string              `json:"_cid"`
+	Metrics []checkBundleMetric `json:"metrics"`
 }
 
 func getAllocations() ([]Allocation, error) {
@@ -110,7 +120,44 @@ func getAllocationMetrics(id string) ([]metricSearchResult, error) {
 	return metrics, nil
 }
 
+func deactivateMetrics(checkBundleID string, metricList checkBundleMetricList) error {
+	reqPath := fmt.Sprintf("/check_bundle_metrics/%s", checkBundleID)
+
+	log.Printf("%+v", metricList)
+
+	metricsJSON, err := json.Marshal(metricList)
+	if err != nil {
+		return err
+	}
+
+	os.Stdout.Write(metricsJSON)
+
+	os.Exit(0)
+
+	response, err := circapi.Put(reqPath, metricsJSON)
+	if err != nil {
+		return err
+	}
+
+	result := checkBundleMetricResult{}
+	err = json.Unmarshal(response, &result)
+	if err != nil {
+		return err
+	}
+
+	for _, metric := range result.Metrics {
+		log.Printf("\tmetric: %s, status: %s\n", metric.Name, metric.Result)
+	}
+
+	log.Println("---")
+
+	os.Exit(0)
+	return nil
+}
+
 func updateMetrics(allocation Allocation) error {
+
+	log.Printf("\tchecking for active metrics\n")
 
 	allocationMetrics, err := getAllocationMetrics(allocation.ID)
 	if err != nil {
@@ -118,18 +165,18 @@ func updateMetrics(allocation Allocation) error {
 	}
 
 	if len(allocationMetrics) == 0 {
-		log.Printf("skipping allocation %s, 0 metrics.", allocation.ID)
+		log.Printf("\t0 active metrics, skipping\n")
 		return nil
 	}
 
-	log.Printf("Deactivating %d metrics for %s on %s (%s:%s)", len(allocationMetrics), allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
+	log.Printf("\tdeactivating %d active metrics\n", len(allocationMetrics))
 
 	checkBundleID := ""
 	metrics := []checkBundleMetric{}
 
 	for _, metric := range allocationMetrics {
 		if checkBundleID == "" {
-			checkBundleID = metric.CheckBundleID
+			checkBundleID = strings.Replace(metric.CheckBundleID, "/check_bundle/", "", -1)
 		}
 		metrics = append(metrics, checkBundleMetric{
 			Name:   metric.Name,
@@ -140,10 +187,12 @@ func updateMetrics(allocation Allocation) error {
 		})
 	}
 
-	log.Printf("%s %+v\n", checkBundleID, metrics)
+	metricList := checkBundleMetricList{metrics}
 
-	// build a list of metrics to deactivate
-	// err = deactivateMetrics(checkBundleID, metrics)
+	err = deactivateMetrics(checkBundleID, metricList)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -202,6 +251,8 @@ func init() {
 
 func main() {
 
+	log.Println("Retrieving completed allocations from Nomad")
+
 	completedAllocations, err := getCompletedAllocations()
 	if err != nil {
 		log.Printf("ERROR: retrieving allocations %v\n", err)
@@ -214,165 +265,11 @@ func main() {
 	}
 
 	for _, allocation := range completedAllocations {
-		updateMetrics(allocation)
+		log.Printf("Processing allocation %s on %s (%s:%s)\n", allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
+		err := updateMetrics(allocation)
+		if err != nil {
+			log.Printf("ERROR: %+v", err)
+			os.Exit(1)
+		}
 	}
-
-	// cfg := &circapi.Config{}
-	//
-	// // set any of these you'd like (obviously api token is required)
-	// cfg.URL = os.Getenv("CIRCONUS_API_URL")
-	// cfg.TokenKey = os.Getenv("CIRCONUS_API_TOKEN")
-	// cfg.TokenApp = os.Getenv("CIRCONUS_API_APP")
-	//
-	// // just so we can get some debug output (delete or set to false to stop debug messages)
-	// cfg.Debug = true
-	//
-	// circapi, err := circapi.NewAPI(cfg)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// // Loop through the completed allocations and then mark them as available
-	// for n := range complete_allocs {
-	// 	var url bytes.Buffer
-	// 	metrics := make([]CirconusMetrics, 0)
-	//
-	// 	url.WriteString("/metric?search=(active:1)*")
-	// 	url.WriteString(complete_allocs[n].ID)
-	// 	url.WriteString("*")
-	// 	foundmetrics, err := circapi.Get(url.String())
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	json.Unmarshal(foundmetrics, &metrics)
-	// 	// Check to see if we're done (returns No more metrics found)
-	// 	if len(metrics) == 0 {
-	// 		break
-	// 	}
-	// 	// A debug - end loop after the first allocation while testings
-	// 	if n > 0 {
-	// 		break
-	// 	}
-	// 	// Make a return structure the same length as the found allolocation structure
-	// 	modifiedmetrics := make([]ModifiedMetrics, len(metrics))
-	// 	fmt.Println("There are", len(metrics), "metrics")
-	//
-	// 	var checkid = ""
-	// 	for m := range metrics {
-	// 		checkid = strings.Replace(metrics[m].CheckBundleID, "/check_bundle/", "", -1)
-	// 		modifiedmetrics[m].Name = metrics[m].Name
-	// 		modifiedmetrics[m].MetricType = metrics[m].MetricType
-	// 		modifiedmetrics[m].Status = "available"
-	// 		fmt.Println("Found Metrics:", metrics[m].Name, "Check Bundle ID:", checkid, "which is", metrics[m].Active)
-	// 		metrics[m].Active = false
-	// 		fmt.Println("Now           ", modifiedmetrics[m].Name, "now", modifiedmetrics[m].Status)
-	// 	}
-	// 	// 		updatedmetrics = JSON.stringify(modifiedmetrics)
-	// 	updatedmetrics, err := json.Marshal(modifiedmetrics)
-	// 	// Debug print
-	// 	fmt.Println("Debug Updated metrics: ", string(updatedmetrics))
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	// Build the URL for the Circonus API call to modify the metrics. To Do is to check if all checkid's are the same,
-	// 	//		if not error out. Edge case, but maybe useful
-	// 	var ret_url bytes.Buffer
-	// 	ret_url.WriteString("/check_bundle_metrics/")
-	// 	ret_url.WriteString(checkid)
-	//
-	// 	// This is where I start to loose it - The proper response begins with { metric
-	// 	var ret_data bytes.Buffer
-	// 	ret_data.WriteString(`{ "metrics" : `)
-	// 	ret_data.WriteString(string(updatedmetrics))
-	// 	ret_data.WriteString("}")
-	//
-	// 	ret_json, err := json.Marshal(ret_data)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Println("Supposed correct JSON for call to Circonus Put: ", ret_data.String())
-	// 	fmt.Println("URL to call API: ", ret_url.String())
-	//
-	// 	// 		var dat map[string]interface{}
-	//
-	// 	ret_put, err := circapi.Put(ret_url.String(), ret_json)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	//		below are some debug statements
-	// 	// 		json.Unmarshal(ret, &dat)
-	// 	//
-	// 	// 		log.Println(dat)
-	// 	// 		log.Print("Length =", len(dat))
-	// 	// 		log.Println(dat[0])
-	//
-	// 	fmt.Println("Debug: ", len(ret_put))
-	// 	log.Println("Debug: FINISHED LOOP")
-	//
-	// }
-	// log.Println("Done")
 }
-
-// To Duplicate my set up, you can use the following api variables:
-
-// export CIRCONUS_API_TOKEN="7339c41b-48ab-617e-8859-c60ab96edb90"
-// export CIRCONUS_API_APP="Nomad"
-// export CIRCONUS_API_URL="https://api.circonus.com/v2/"
-// export GOPATH=$PWD
-
-// A run should disable the following set of metrics, you can search in the UI by the following:
-
-//  https://conference.circonus.com/checks/metrics?search=*422f1f87-792a-cce3-97dd-3d15ade35619*
-
-// but it does not. No error is given, but
-// Proper call to circapi.Put should look like the following.
-// {
-// 	metrics: [{
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`system',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`kernel_usage',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`user',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`max_usage',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`total_percent',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`swap',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`total_ticks',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`rss',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`throttled_periods',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`kernel_max_usage',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`cpu`throttled_time',
-// 		type: 'numeric'
-// 	}, {
-// 		status: 'available',
-// 		name: 'nomad`nc-5`client`allocs`hashiapp`hashiapp`422f1f87-792a-cce3-97dd-3d15ade35619`hashiapp`memory`cache',
-// 		type: 'numeric'
-// 	}]
-// }
