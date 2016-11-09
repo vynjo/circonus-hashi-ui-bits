@@ -7,96 +7,29 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	// "strings"
+	"strings"
 	// "time"
 
 	"github.com/circonus-labs/circonus-gometrics/api"
 )
 
-// // Structures copied from Nomad: TaskEvent, TaskState, and Allocation, needed to parse results from Nomad Server
-// // 		in order to get Allocation list (Running, Lost, or Complete)
-// type TaskEvent struct {
-// 	Type string
-// 	Time int64 // Unix Nanosecond timestamp
-// 	// Restart fields.
-// 	RestartReason string
-// 	// Driver Failure fields.
-// 	DriverError string // A driver error occurred while starting the task.
-// 	// Task Terminated Fields.
-// 	ExitCode int    // The exit code of the task.
-// 	Signal   int    // The signal that terminated the task.
-// 	Message  string // A possible message explaining the termination of the task.
-// 	// Killing fields
-// 	KillTimeout time.Duration
-// 	// Task Killed Fields.
-// 	KillError string // Error killing the task.
-// 	// TaskRestarting fields.
-// 	StartDelay int64 // The sleep period before restarting the task in unix nanoseconds.
-// 	// Artifact Download fields
-// 	DownloadError string // Error downloading artifacts
-// 	// Validation fields
-// 	ValidationError string // Validation error
-// 	// The maximum allowed task disk size.
-// 	DiskLimit int64
-// 	// The recorded task disk size.
-// 	DiskSize int64
-// 	// Name of the sibling task that caused termination of the task that
-// 	// the TaskEvent refers to.
-// 	FailedSibling string
-// 	// VaultError is the error from token renewal
-// 	VaultError string
-// }
-//
-// type TaskState struct {
-// 	// The current state of the task.
-// 	State string
-//
-// 	// Series of task events that transition the state of the task.
-// 	Events []*TaskEvent
-// }
-
 // Allocation is a struct containing state of a nomad allocation
 type Allocation struct {
 	// ID of the allocation (UUID)
 	ID string
-	// // ID of the evaluation that generated this allocation
-	// EvalID string
 	// Name is a logical name of the allocation.
 	Name string
 	// NodeID is the node this is being placed on
 	NodeID string
-	// Job is the parent job of the task group being allocated.
+	// JobID is the parent job of the task group being allocated.
 	// This is copied at allocation time to avoid issues if the job
 	// definition is updated.
 	JobID string
-	// // TaskGroup is the name of the task group that should be run
-	// TaskGroup string
-	// // Desired Status of the allocation on the client
-	// DesiredStatus string
-	// // DesiredStatusDescription is meant to provide more human useful information
-	// DesiredDescription string
-	// // Status of the allocation on the client
+	// ClientStatus of the allocation on the client
 	ClientStatus string
-	// // ClientStatusDescription is meant to provide more human useful information
-	// ClientDescription string
-	// // TaskStates stores the state of each task,
-	// TaskStates map[string]*TaskState
-	// // Raft Indexes
-	// CreateIndex uint64
-	// ModifyIndex uint64
 }
-
-// type AllocationResponse struct {
-// 	Collection []Allocation
-// }
-
-// A test function for Slices.
-func printSlice(s []int) {
-	fmt.Printf("len=%d cap=%d %v\n", len(s), cap(s), s)
-}
-
-// Modified from cnsobject.go in the cironus-api-go repo:
 
 // Used to Parse results from the Circonus API when searching for Metrics which correspond to an Allocation
 type circonusMetrics struct {
@@ -119,7 +52,15 @@ type circonusMetrics struct {
 
 func getAllocations() ([]Allocation, error) {
 	// Get the current allocations (running, lost, complete) Hard coded to IP of Madsen's Nomad server. Will change.
-	res, err := http.Get("http://104.196.144.155:4646/v1/allocations")
+	// /v1/allocations
+
+	reqURL := nomadURL.String()
+
+	if !strings.Contains(reqURL, "v1/allocations") {
+		reqURL += "v1/allocations"
+	}
+
+	res, err := http.Get(reqURL)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +119,7 @@ func getAllocationMetrics(id string) ([]circonusMetrics, error) {
 	return metrics, nil
 }
 
-func deactivateMetrics(allocation Allocation) error {
+func updateMetrics(allocation Allocation) error {
 
 	log.Printf("Removing metrics for %s on %s (%s:%s)", allocation.JobID, allocation.NodeID, allocation.Name, allocation.ID)
 
@@ -194,20 +135,40 @@ func deactivateMetrics(allocation Allocation) error {
 
 	log.Printf("allocation %s has %d metrics", allocation.ID, len(allocationMetrics))
 
+	// build a list of metrics to deactivate
+	// err = deactivateMetrics(checkBundleID, metrics)
+
 	return nil
 }
 
-var circapi *api.API
+var (
+	circapi  *api.API
+	nomadURL *url.URL
+)
 
 func init() {
 	var err error
 
 	cfg := &api.Config{}
 
-	// set any of these you'd like (obviously api token is required)
-	cfg.URL = os.Getenv("CIRCONUS_API_URL")
-	cfg.TokenKey = os.Getenv("CIRCONUS_API_TOKEN")
-	cfg.TokenApp = os.Getenv("CIRCONUS_API_APP")
+	apiKey := os.Getenv("CIRCONUS_API_TOKEN")
+	if apiKey == "" {
+		log.Printf("CIRCONUS_API_TOKEN is not set, exiting.\n")
+		os.Exit(1)
+	}
+	cfg.TokenKey = apiKey
+
+	apiApp := os.Getenv("CIRCONUS_API_APP")
+	if apiApp != "" {
+		cfg.TokenApp = apiApp
+	} else {
+		cfg.TokenApp = "nomad-metric-deactivator"
+	}
+
+	apiURL := os.Getenv("CIRCONUS_API_URL")
+	if apiURL != "" {
+		cfg.URL = apiURL
+	}
 
 	// just so we can get some debug output (delete or set to false to stop debug messages)
 	cfg.Debug = true
@@ -217,6 +178,19 @@ func init() {
 		log.Printf("ERROR: allocating Circonus API %v\n", err)
 		os.Exit(1)
 	}
+
+	nomadurl := os.Getenv("NOMAD_URL")
+	if nomadurl == "" {
+		log.Printf("ERROR: NOMAD_URL not set, exiting.\n")
+		os.Exit(1)
+	}
+
+	nomadURL, err = url.Parse(nomadurl)
+	if err != nil {
+		log.Printf("ERROR: parsing NOMAD_URL %+v\n", err)
+		os.Exit(1)
+	}
+
 }
 
 func main() {
@@ -233,7 +207,7 @@ func main() {
 	}
 
 	for _, allocation := range completedAllocations {
-		deactivateMetrics(allocation)
+		updateMetrics(allocation)
 	}
 
 	// cfg := &circapi.Config{}
