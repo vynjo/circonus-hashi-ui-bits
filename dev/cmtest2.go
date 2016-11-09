@@ -140,7 +140,7 @@ func deactivateMetrics(checkBundleID string, metricList checkBundleMetricList) e
 	}
 
 	for _, metric := range result.Metrics {
-		log.Printf("\tmetric: %s, status: %s\n", metric.Name, metric.Result)
+		log.Printf("\tmetric: %s, status: %s, result: %s\n", metric.Name, metrics.Status, metric.Result)
 	}
 
 	log.Println("---")
