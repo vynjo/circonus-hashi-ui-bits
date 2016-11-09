@@ -104,6 +104,7 @@ func main() {
     if err != nil {
         panic(err)
     }
+    log.Printf(metrics)
 
     src := rand.NewSource(time.Now().UnixNano())
     rnd := rand.New(src)

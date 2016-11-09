@@ -2,7 +2,7 @@
 var stdio = require('stdio');
 
 var ops = stdio.getopt({
-    'nomadip': {key: 'n', args: 1, mandatory: true, description: 'Nomad Server API IP Address'},
+    'nomadip': {key: 'i', args: 1, mandatory: true, description: 'Nomad Server API IP Address'},
     'token': {key: 't', args: 1, mandatory: true, description: 'Circonus AP Token'},
     'plan': {key: 'p', args: 1, type: Boolean, description: 'Show Plan but do not delete'}
 });
@@ -13,12 +13,12 @@ var http = require("http");
 
 var url = "http://" + ops.nomadip+ ":4646/v1/allocations";
 var allocToDeactivate = [];
+var runningAllocations = [];
 var body = "", current_allocations;
 // get is a simple wrapper for request()
 // which sets the http method to GET
 var request = http.get(url, function (response) {
-    // data is streamed in chunks from the server
-    // so we have to handle the "data" event    
+    // data is streamed in chunks from the server so we have to handle the "data" event    
     response.on("data", function (chunk) {
         body += chunk;
     }); 
@@ -28,22 +28,21 @@ var request = http.get(url, function (response) {
         current_allocations = JSON.parse(body); //Parse into list of allocations
         console.log("Found", current_allocations.length, "allocations in total");
         for (var item in current_allocations) {
-			console.log("Allocation:", current_allocations[item].ID.substr(0,8), current_allocations[item].JobID, current_allocations[item].DesiredStatus, current_allocations[item].ClientStatus);
-			if (current_allocations[item].ClientStatus == "complete") {
-				console.log("Deactivate:", current_allocations[item].ID.substr(0,8))
-				allocToDeactivate.push(current_allocations[item].ID.substr(0,8));
-				if (ops.plan == true) {
-					ShowMetricsTodDeactivate(ops.token, current_allocations[item].ID.substr(0,8))
-				} else {
-					ShowMetricsTodDeactivate(ops.token, current_allocations[item].ID.substr(0,8))
-				}
+		// console.log("Allocation:", current_allocations[item].ID.substr(0,8), current_allocations[item].JobID, current_allocations[item].DesiredStatus, current_allocations[item].ClientStatus);
+			if (current_allocations[item].ClientStatus == "running") {
+				runningAllocations.push(current_allocations[item].ID.substr(0,8));
 			}
 		}
-		printalloc(allocToDeactivate.length);
-		console.log("Will Deactivate: ", allocToDeactivate);
+		console.log("Found", runningAllocations.length, "running allocations");
     }); 
-
 }); 
+console.log(runningAllocations.length);
+
+while (runningAllocations.length == 0) {
+	console.log("waiting");
+} 
+	console.log(runningAllocations);
+
 
 function printalloc(alloc) {
 	console.log("Found", alloc, "which are complete")
