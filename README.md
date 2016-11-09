@@ -8,9 +8,9 @@ Current tools include:
 <p>go/deactivate-complete-allocs.go
 <p>and Linux executable - deactivate-complete-allocs
 <p>Requires environment variables:</p>
-      <li>CIRCONUS_API_TOKEN="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"</li>
-      <li>CIRCONUS_API_APP="Name_of_App"</li>
-      <li>CIRCONUS_API_URL="https://api.circonus.com/v2/"</li>
-      <li>NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"</li>
+      CIRCONUS_API_TOKEN="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
+      CIRCONUS_API_APP="Name_of_App"
+      CIRCONUS_API_URL="https://api.circonus.com/v2/"
+      NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
 
   Node.js versions for
