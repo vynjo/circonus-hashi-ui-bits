@@ -14,12 +14,13 @@ Current tools include:
       NOMAD_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
 
  <h3> Node.js versions for</h3>
-⋅⋅⋅create-cluster.js
-⋅⋅⋅deactivate-complete-lost-allocs.js
-⋅⋅⋅deactivate-metrics.js
-⋅⋅⋅deactivate-complete-allocs.js
-⋅⋅⋅deactivate-lost-allocs.js
-⋅⋅⋅find-running-allocations.js
-<p>Requires circonusapi2 and stdio
- <p>           npm install circonusapi2
- <p>           npm install stdio
+- create-cluster.js
+- deactivate-complete-lost-allocs.js
+- deactivate-metrics.js
+- deactivate-complete-allocs.js
+- deactivate-lost-allocs.js
+- find-running-allocations.js
+
+Requires circonusapi2 and stdio
+- npm install circonusapi2
+- npm install stdio
