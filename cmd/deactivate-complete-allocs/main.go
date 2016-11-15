@@ -102,7 +102,7 @@ func getCompletedAllocations() ([]Allocation, error) {
 
 func getAllocationMetrics(id string) ([]metricSearchResult, error) {
 	q := url.Values{}
-	q.Set("search", "(active:1)*%s*")
+	q.Set("search", fmt.Sprintf("(active:1)*%s*", id))
 	apiURL := url.URL{
 		Path:     "/metric",
 		RawQuery: q.Encode(),
