@@ -14,6 +14,8 @@ const args = process.argv;
 
 var cluster_id = {};
 
+var query_string = "search:metric:average("
+
 const cluster_config = {
     "name": ops.title,
     "queries": [
@@ -27,8 +29,51 @@ const cluster_config = {
     "tags": ops.tags
 };
 
+const caql_config = {
+  display_name: "CAQL",
+  config: {
+        query: 'search:metric:average("nomad*runtime*free_count (active:1)") | histogram()',
+  },
+  metrics: [
+    {
+      name: "Foobar",
+      status: "active",
+      type: "histogram"
+    }
+  ],
+  target: "q._caql",
+  period: 60,
+  status: "active",
+  tags: ops.tags,
+  timeout: 10,
+  type: "caql",
+  brokers: [
+        "/broker/1490"
+    ],
+}
+
+var body1;
+
 api.setup(ops.token, 'Nomad');
 
+var request = require("request");
+var data;
+
+
+
+
+request( api.post('/check_bundle', caql_config, (code, error, body) => {
+	 if (error !== null) {
+        console.error(error);
+        process.exit(1);
+    }
+    data = body;
+}));
+
+console.log(data);
+   
+
+/*
 api.post('/metric_cluster', cluster_config, (code, error, body) => {
     if (error !== null) {
         console.error(error);
@@ -62,7 +107,7 @@ api.post('/metric_cluster', cluster_config, (code, error, body) => {
 	    "min_right_y": null,
 	    "notes": null,
 	    "overlay_sets": null,
-	    "style": null,
+	    "style": "line",
 	    "tags": ops.tags,
 	    "title": ops.title};
 
@@ -74,3 +119,4 @@ api.post('/metric_cluster', cluster_config, (code, error, body) => {
 	    console.dir(body);
 	});
 });
+*/

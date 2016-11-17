@@ -1,0 +1,53 @@
+[{
+	"ID": "200d68f7-c2b2-31f7-d2e4-10f2114585ee",
+	"Datacenter": "dc1",
+	"Name": "nc-5",
+	"NodeClass": "",
+	"Drain": false,
+	"Status": "ready",
+	"StatusDescription": "",
+	"CreateIndex": 97387,
+	"ModifyIndex": 121109
+}, {
+	"ID": "28f84cc1-8ee7-5215-db7c-95b7cb001105",
+	"Datacenter": "dc1",
+	"Name": "nc-3",
+	"NodeClass": "",
+	"Drain": false,
+	"Status": "ready",
+	"StatusDescription": "",
+	"CreateIndex": 97530,
+	"ModifyIndex": 121093
+}, {
+	"ID": "7818b7f9-0e30-b70c-a8cf-90c39977c109",
+	"Datacenter": "dc1",
+	"Name": "nc-1",
+	"NodeClass": "",
+	"Drain": false,
+	"Status": "ready",
+	"StatusDescription": "",
+	"CreateIndex": 79421,
+	"ModifyIndex": 121072
+}, {
+	"ID": "aa47f1cf-33c7-aaac-b092-c6621fa21f1e",
+	"Datacenter": "dc1",
+	"Name": "nc-2",
+	"NodeClass": "",
+	"Drain": false,
+	"Status": "ready",
+	"StatusDescription": "",
+	"CreateIndex": 111908,
+	"ModifyIndex": 121081
+}, {
+	"ID": "ae7af160-f303-dff9-f654-d8b867d38e8b",
+	"Datacenter": "dc1",
+	"Name": "nc-4",
+	"NodeClass": "",
+	"Drain": false,
+	"Status": "ready",
+	"StatusDescription": "",
+	"CreateIndex": 112207,
+	"ModifyIndex": 121102
+}]
+
+<!-- curl http://104.196.186.8:4646/v1/nodes -->
