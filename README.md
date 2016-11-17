@@ -5,17 +5,13 @@ Current tools include:
 
 ### GO Version for:
 Deactivation of "Complete" Allocations.
-   **go/deactivate-complete-allocs.go**
-
-and Linux executable - **deactivate-complete-allocs**
+   **go/deactivate-complete-allocs.go** (and Linux executable)
 
 Requires environment variables or Parameters:
 - CIRCONUS_API_KEY="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
 - CIRCONUS_API_APP="Name_of_App"
 - CIRCONUS_API_URL="https://api.circonus.com/v2/"
 - NOMAD_API_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
-
-      
 PARAMETERS:
 
 - apiurl
@@ -28,6 +24,30 @@ PARAMETERS:
     	(string) Circonus API Token Key [none] (CIRCONUS_API_KEY)
 - nomadurl
     	(string) Base Nomad API URL [http://localhost:4646/] (NOMAD_API_URL)
+
+
+Creating a Metric Cluster from a Query
+  **go/create_cluster.go** (and Linux executable)
+Requires environment variables or Parameters:
+- CIRCONUS_API_KEY="API_TOKEN_FROM_YOUR_CIRCONUS_ACCOUNT"
+- CIRCONUS_API_APP="Name_of_App"
+- CIRCONUS_API_URL="https://api.circonus.com/v2/"
+PARAMETERS:
+
+- apiurl
+    	(string) Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)
+- app 
+    	(string) Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)
+- debug
+    	Enable Circonus API debugging
+- key
+    	(string) Circonus API Token Key [none] (CIRCONUS_API_KEY)
+- query
+    	(string) The Query used to search 
+- title
+      (string) The name of the Cluster
+- tags
+      (string) Tags to include
 
 ### Node.js versions for
 - node/create-cluster.js
