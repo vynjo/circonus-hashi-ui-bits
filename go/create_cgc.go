@@ -89,7 +89,7 @@ var (
 )
 
 type caqlConfig	struct {
-	Query 					string 			`json:"query"`
+	Query 					string			`json:"query"`
 	ReverseSecretKey 		string 			`json:"reverse:secret_key"`
 	Name 					string 			`json:"name"`
 
@@ -166,6 +166,10 @@ func setup() {
 			apiURL = "https://api.circonus.com/"
 		}
 	}
+	
+	if tagString == "" {
+		tagString = "creator:api"
+	}
 	cfg.URL = apiURL
 
 	cfg.Debug = debug
@@ -182,7 +186,7 @@ func setup() {
 	}
 	
 	if titleString == "" {
-		log.Printf("Must Title String %+v\n", err)
+		log.Printf("Must  have title string %+v\n", err)
 		os.Exit(1)
 	}
 }
@@ -202,11 +206,10 @@ func createCaqlCheck() (caql_check caqlCheck, err error) {
 		Brokers: 		[]string{"/broker/1490"},
 		Config:			caqlConfig{
 			Query: 		"search:metric:average(\"" + queryString + "\") | histogram()",
-			Name:		"Histogram",
 		},
-		Metrics:		[]caqlMetrics{
-			{Name: 	"Output" + titleString,
-			Status: "active",
+		Metrics: []caqlMetrics{
+			{Status: "active",
+			Name:	"output[1]",
 			Type: 	"histogram"},
 		},
 	}
@@ -216,7 +219,7 @@ func createCaqlCheck() (caql_check caqlCheck, err error) {
 		if err != nil {
 		return  caql_check, err
  	}
- 	log.Printf(" Adding CAQL Check: %v\n", string(checkJSON))
+//  	log.Printf(" Adding CAQL Check: %v\n", string(checkJSON))
 	response, err := circapi.Post(reqPath, checkJSON)
 	if err != nil {
 		return caql_check, err
@@ -262,7 +265,7 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 	if err != nil {
 		return graph, err
 	}
-	log.Printf("%v", graph)
+// 	log.Printf("%v", graph)
 	return graph, nil
 }
 
@@ -278,6 +281,7 @@ func makeCluster() (metricCluster, error) {
 	    },
 	    Tags: tagString,
     }
+//  fmt.Printf("TAGS = %v\n", tagString)
 // 	fmt.Println("ORIGINAL Cluster:", cluster)
  	reqPath := "/metric_cluster"
 
@@ -285,7 +289,7 @@ func makeCluster() (metricCluster, error) {
 		if err != nil {
 		return  clusterReturn, err
  	}
-//  	log.Printf("%v", string(clusterJSON))
+//  log.Printf("%v", string(clusterJSON))
 	response, err := circapi.Post(reqPath, clusterJSON)
 	if err != nil {
 		return clusterReturn, err
@@ -307,9 +311,10 @@ func addCaqlToGraph (graph clusterGraph, caql caqlCheck) (returnGraph clusterGra
 	
 	checkJSON, err := json.Marshal(caql)
 		if err != nil {
+			log.Printf("ERROR: allocating Circonus API %v\n%v\n", err, checkJSON)
 		return  graph, err
  	}
- 	fmt.Printf("Add CAQL Definition: %+v\n", string(checkJSON))
+//  	fmt.Printf("Add CAQL Definition: %+v\n", string(checkJSON))
  	checknum, _ := strconv.Atoi(strings.Replace(caql.Checks[0], "/check/", "", -1))
  	
 //  	fmt.Printf("CID=%v Name= %v", caql.Cid, caql.DisplayName)
@@ -333,9 +338,11 @@ func addCaqlToGraph (graph clusterGraph, caql caqlCheck) (returnGraph clusterGra
 	
 	response, err := circapi.Put(graph.Cid, graphJSON)
 	if err != nil {
-		return graph, err
+		log.Printf("ERROR: allocating Circonus API %v\n%v\n", err, response)
+		os.Exit(1)
+// 		return graph, err
 	}
-	fmt.Printf("Put Response: %v\n", string(response))
+// 	fmt.Printf("Put Response: %v\n", string(response))
 	return graph, err
 }
 
@@ -343,6 +350,13 @@ func main() {
 
 	setup()
 	
+	clusterReturn, err := makeCluster()
+	if err != nil {
+		log.Printf("ERROR: creating metric cluster %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
+
 	caqlCheck, err := createCaqlCheck()
 	if err != nil {
 		log.Printf("ERROR: creating caql check %v\n", err)
@@ -351,23 +365,16 @@ func main() {
 	
 	fmt.Printf("CAQL Check Created: %v\n", caqlCheck.Cid)
 // 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
-	clusterReturn, err := makeCluster()
-	if err != nil {
-		log.Printf("ERROR: creating metric cluster %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
 	
 	clusterGraph, err := makeGraphfromCluster(clusterReturn)
 	if err != nil {
 		log.Printf("ERROR: creating metric cluster graph%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Graph Created:%v", clusterGraph.Cid)
+	fmt.Printf("Graph Created: %v\n", clusterGraph.Cid)
 	graph, err := addCaqlToGraph(clusterGraph, caqlCheck)
 	if err != nil {
-		log.Printf("ERROR: adding CAQL to Graph%v\n", err)
+		log.Printf("ERROR: adding CAQL to Graph: %v, Error:%v\n", graph, err)
 		os.Exit(1)
 	}
-	log.Printf("CAQL added:%v", graph)
 }
