@@ -273,11 +273,24 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 
 func makeCluster() (metricCluster, error) {
 
+	var cluster_type string
+	
+	if strings.Contains(tagString, "counter") {
+		cluster_type = "counter"
+	} else if strings.Contains(tagString, "derive") {
+		cluster_type = "derive"
+	} else if strings.Contains(tagString, "count") {
+		cluster_type = "count"
+	} else if strings.Contains(tagString, "text") {
+		cluster_type = "text"
+	} else {
+		cluster_type = "average"
+	}
 	var clusterReturn metricCluster
 	cluster := ClusterDef {
 	    Name: titleString,
 	    Queries: []Querylist{
-		    {queryString, "average"},
+		    {queryString, cluster_type},
 	    },
 	    Tags: tagString,
     }
@@ -350,31 +363,38 @@ func main() {
 
 	setup()
 	
-	clusterReturn, err := makeCluster()
-	if err != nil {
-		log.Printf("ERROR: creating metric cluster %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
+	queryString = queryString + "(active:1)"
+	
+	if strings.Contains(tagString, "data-type:histogram") {
+		log.Printf("Adding Histogram")
+	} else {
+		clusterReturn, err := makeCluster()
+		if err != nil {
+			log.Printf("ERROR: creating metric cluster %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
+	
+		caqlCheck, err := createCaqlCheck()
+		if err != nil {
+			log.Printf("ERROR: creating caql check %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("CAQL Check Created: %v\n", caqlCheck.Cid)
+	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
+		
+		clusterGraph, err := makeGraphfromCluster(clusterReturn)
+		if err != nil {
+			log.Printf("ERROR: creating metric cluster graph%v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Graph Created: %v\n", clusterGraph.Cid)
+		graph, err := addCaqlToGraph(clusterGraph, caqlCheck)
+		if err != nil {
+			log.Printf("ERROR: adding CAQL to Graph: %v, Error:%v\n", graph, err)
+			os.Exit(1)
+		}
 
-	caqlCheck, err := createCaqlCheck()
-	if err != nil {
-		log.Printf("ERROR: creating caql check %v\n", err)
-		os.Exit(1)
-	}
-	
-	fmt.Printf("CAQL Check Created: %v\n", caqlCheck.Cid)
-// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
-	
-	clusterGraph, err := makeGraphfromCluster(clusterReturn)
-	if err != nil {
-		log.Printf("ERROR: creating metric cluster graph%v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("Graph Created: %v\n", clusterGraph.Cid)
-	graph, err := addCaqlToGraph(clusterGraph, caqlCheck)
-	if err != nil {
-		log.Printf("ERROR: adding CAQL to Graph: %v, Error:%v\n", graph, err)
-		os.Exit(1)
 	}
 }
