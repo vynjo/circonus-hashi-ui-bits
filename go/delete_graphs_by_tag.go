@@ -223,7 +223,7 @@ func deleteGraphs(graphs []Graph) error {
 
 func getGraphsViaTag(tag string) ([]Graph, error) {
 
-	SearchURL := fmt.Sprintf("graph?search=(tags:%s)", tag)
+	SearchURL := fmt.Sprintf("graph?search=(tags:%s)&size=100", tag)
 
 	
 // 	metricSearchURL = "graph?search='(tags:creator:api)'"

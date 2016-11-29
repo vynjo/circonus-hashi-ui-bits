@@ -223,7 +223,7 @@ func deleteClusters(Clusters []metricCluster) error {
 
 func getClusterViaTag(tag string) ([]metricCluster, error) {
 
-	metricSearchURL := fmt.Sprintf("metric_cluster?search=(tags:%s)", tag)
+	metricSearchURL := fmt.Sprintf("metric_cluster?search=(tags:%s)&size=100", tag)
 
 	
 // 	metricSearchURL = "graph?search='(tags:creator:api)'"
