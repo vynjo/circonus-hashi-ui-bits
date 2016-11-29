@@ -195,6 +195,20 @@ func createCaqlCheck() (caql_check caqlCheck, err error) {
 	
 	var caqlReturn caqlCheck
 	
+	var cluster_type string
+	
+	if strings.Contains(tagString, "counter") {
+		cluster_type = "counter"
+	} else if strings.Contains(tagString, "derive") {
+		cluster_type = "derivative"
+	} else if strings.Contains(tagString, "count") {
+		cluster_type = "count"
+	} else if strings.Contains(tagString, "text") {
+		cluster_type = "text"
+	} else {
+		cluster_type = "average"
+	}
+	
 	caql_check = caqlCheck {
 		DisplayName: 	titleString + " (Histogram)",
 		Target: 		"q._caql",
@@ -205,7 +219,7 @@ func createCaqlCheck() (caql_check caqlCheck, err error) {
 		Type: 			"caql",
 		Brokers: 		[]string{"/broker/1490"},
 		Config:			caqlConfig{
-			Query: 		"search:metric:average(\"" + queryString + "\") | histogram()",
+			Query: 		"search:metric:" + cluster_type + "(\"" + queryString + "\") | histogram()",
 		},
 		Metrics: []caqlMetrics{
 			{Status: "active",

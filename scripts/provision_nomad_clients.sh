@@ -1,3 +1,4 @@
+#!/bin/bash
 
 ###### Nomad Client Metrics
 ##gauge
