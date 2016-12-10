@@ -4,14 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-// 	"io/ioutil"
 	"log"
-// 	"net/http"
-// 	"net/url"
 	"os"
 	"strings"
 	"strconv"
-
 	"github.com/circonus-labs/circonus-gometrics/api"
 )
 
@@ -79,6 +75,16 @@ type clusterGraph struct {
 	Cid 				string 					`json:"_cid"`
 	Style 				string 					`json:"style"`
 	Datapoints			[]DatapointsDef			`json:"datapoints"`
+}
+
+type regularGraph struct {
+	Description 		string	 				`json:"description"`
+	Tags 				[]string 				`json:"tags"`
+	Title 				string 					`json:"title"`
+	Cid 				string 					`json:"_cid"`
+	Style 				string 					`json:"style"`
+	Datapoints			[]DatapointsDef			`json:"datapoints"`
+	Overlayset			[]interface{}			`json:"overlay_sets"`
 }
 
 var (
@@ -191,7 +197,51 @@ func setup() {
 	}
 }
 
-func createCaqlCheck() (caql_check caqlCheck, err error) {
+// search:metric:histogram("nomad*memberlist*gossip") | histogram:merge()
+// Based on QueryString creates a Caql Check combining a set of histograms into a merged histogram
+func createCaqlCheckForHistograms() (caql_check caqlCheck, err error) {
+	
+	var caqlReturn caqlCheck
+		
+	caql_check = caqlCheck {
+		DisplayName: 	titleString + " (Merged Histogram)",
+		Target: 		"q._caql",
+		Period: 		60,
+		Status: 		"active",
+		Tags: 			strings.Split(tagString,","),
+		Timeout: 		10,
+		Type: 			"caql",
+		Brokers: 		[]string{"/broker/1490"},
+		Config:			caqlConfig{
+			Query: 		"search:metric:histogram" + "(\"" + queryString + "\") | histogram:merge()",
+		},
+		Metrics: []caqlMetrics{
+			{Status: "active",
+			Name:	"output[1]",
+			Type: 	"histogram"},
+		},
+	}
+	reqPath := "/check_bundle"
+
+	checkJSON, err := json.Marshal(caql_check)
+		if err != nil {
+		return  caql_check, err
+ 	}
+//  	log.Printf(" Adding CAQL Check: %v\n", string(checkJSON))
+	response, err := circapi.Post(reqPath, checkJSON)
+	if err != nil {
+		return caql_check, err
+	}
+// 	log.Printf("%v\n", response)	
+	err = json.Unmarshal(response, &caqlReturn)
+	if err != nil {
+		return caqlReturn, err
+	}
+// 	log.Printf("Returning Check: %v\n", caqlReturn.Cid)
+	return caqlReturn, nil
+}
+// Based on QueryString creates a Caql Check combining a cluster of numeric data into a histogram
+func createCaqlCheckForCluster() (caql_check caqlCheck, err error) {
 	
 	var caqlReturn caqlCheck
 	
@@ -283,8 +333,6 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 	return graph, nil
 }
 
-
-
 func makeCluster() (metricCluster, error) {
 
 	var cluster_type string
@@ -332,6 +380,8 @@ func makeCluster() (metricCluster, error) {
 	return clusterReturn, nil
 }
 
+// Currently not used, but can be called to add a CAQL Check to a Cluster Graph
+
 func addCaqlToGraph (graph clusterGraph, caql caqlCheck) (returnGraph clusterGraph, err error) {
 // 	log.Printf("Add Caql to graph\n")
 // 	log.Printf("Add: %v\n", caql)
@@ -373,14 +423,92 @@ func addCaqlToGraph (graph clusterGraph, caql caqlCheck) (returnGraph clusterGra
 	return graph, err
 }
 
+func CreateCaqlGraph (caql caqlCheck) (returnGraph regularGraph, err error) {
+	
+ 	checknum, _ := strconv.Atoi(strings.Replace(caql.Checks[0], "/check/", "", -1))
+ 	
+//  	overlays := struct {
+// 	 	AqmvKSMl {
+//             overlays struct {
+//                 foobar struct {
+//                     data_ops struct {
+//                         "base_period": "0",
+//                         "extension": "lua/allquantile",
+//                         "in_percent": "true",
+//                         "inverse": "0",
+//                         "quantiles": "50,90,99",
+//                         "single_value": "1",
+//                         "target_period": "",
+//                         "time_offset": "",
+//                         "transform": "snowth::allquantile"
+//                     },
+//                     "id": "1xqLtj",
+//                     "ui_specs": {
+//                         "id": "1xqLtj",
+//                         "label": "Percentiles",
+//                         "type": "quantile",
+//                         "z": "1"
+//                     }
+//                 }
+//             },
+//             "title": "50, 90, & 99th Percentiles"
+//         },
+// 
+//  	}
+//  	var cluster []ClusterDef
+ 		
+ 	graph  := regularGraph {
+// 		Description: caql.Description,
+		Title: caql.DisplayName,
+		Style: "area",
+		Tags: 			caql.Tags,
+	}
+	datapoint := DatapointsDef {
+		CheckID: 		checknum,
+		MetricType:		"histogram",
+		Name:			caql.DisplayName,
+		Axis:			"r",
+		MetricName:		caql.Metrics[0].Name,
+		Color:			"#2F5DAB",
+	}
+	graph.Datapoints = append(graph.Datapoints, datapoint)
+	graphJSON, err := json.Marshal(graph)
+		if err != nil {
+		return  graph, err
+ 	}
+// 	fmt.Printf("Adding Graph: %+v\n", string(graphJSON))
+	reqPath := "/graph"
+	response, err := circapi.Post(reqPath, graphJSON)
+	if err != nil {
+		log.Printf("ERROR: Creating Graph via Circonus API %v\n%v\n", err, response)
+		os.Exit(1)
+// 		return graph, err
+	}
+// 	fmt.Printf("Put Response: %v\n", string(response))
+	return graph, err
+}
+
+
 func main() {
 
 	setup()
 	
 	queryString = queryString + "(active:1)"
-	
+	log.Printf("%v\n", tagString)
 	if strings.Contains(tagString, "data-type:histogram") {
-		log.Printf("Adding Histogram")
+// 		log.Printf("Adding Histogram")
+		caqlCheck, err := createCaqlCheckForHistograms()
+		if err != nil {
+			log.Printf("ERROR: creating merged histogram caql check %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
+		caqlgraph, err := CreateCaqlGraph(caqlCheck)
+		if err != nil {
+			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
+			os.Exit(1)
+		}
+		fmt.Printf("Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
 	} else {
 		clusterReturn, err := makeCluster()
 		if err != nil {
@@ -389,13 +517,13 @@ func main() {
 		}
 		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
 	
-		caqlCheck, err := createCaqlCheck()
+		caqlCheck, err := createCaqlCheckForCluster()
 		if err != nil {
 			log.Printf("ERROR: creating caql check %v\n", err)
 			os.Exit(1)
 		}
 		
-		fmt.Printf("CAQL Check Created: %v\n", caqlCheck.Cid)
+		fmt.Printf("Cluster to Merged Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
 	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
 		
 		clusterGraph, err := makeGraphfromCluster(clusterReturn)
@@ -403,12 +531,13 @@ func main() {
 			log.Printf("ERROR: creating metric cluster graph%v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Graph Created: %v\n", clusterGraph.Cid)
-		graph, err := addCaqlToGraph(clusterGraph, caqlCheck)
+		fmt.Printf("Cluster Graph Created: %v\n", clusterGraph.Cid)
+		caqlgraph, err := CreateCaqlGraph(caqlCheck)
 		if err != nil {
-			log.Printf("ERROR: adding CAQL to Graph: %v, Error:%v\n", graph, err)
+			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
 			os.Exit(1)
 		}
+		fmt.Printf("Cluster to Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
 
 	}
 }
