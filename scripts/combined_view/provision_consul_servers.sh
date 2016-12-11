@@ -14,6 +14,7 @@
 ../../go/create_cgc -query "*consul*consul*rpc*query*" -title "Consul rpc query" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*consul*rpc*raft_handoff*" -title "Consul rpc raft_handoff" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*consul*rpc*request*" -title "Consul rpc request" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*memberlist*degraded*probe*" -title "Consul memberlist degraded probe" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*msg*alive*" -title "Consul memberlist msg alive" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*msg*dead*" -title "Consul memberlist msg dead" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
@@ -23,8 +24,11 @@
 ../../go/create_cgc -query "*consul*memberlist*tcp*sent*" -title "Consul memberlist tcp sent" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*udp*received*" -title "Consul memberlist udp received" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*udp*sent*" -title "Consul memberlist udp sent" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*consul*session_ttl*active*" -title "Consul * Consul session_ttl active" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*memberlist*health*score*" -title "Consul * memberlist health score" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*runtime*alloc_bytes*" -title "Consul * runtime alloc_bytes" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*runtime*free_count*" -title "Consul * runtime free_count" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*runtime*heap_objects*" -title "Consul * runtime heap_objects" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
@@ -33,9 +37,11 @@
 ../../go/create_cgc -query "*consul*runtime*sys_bytes*" -title "Consul * runtime sys_bytes" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*runtime*total_gc_pause_ns*" -title "Consul * runtime total_gc_pause_ns" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*runtime*total_gc_runs*" -title "Consul * runtime total_gc_runs" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*raft*state*candidate*" -title "Consul raft state candidate" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*raft*state*follower*" -title "Consul raft state follower" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*raft*transition*heartbeat_timeout*" -title "Consul raft transition heartbeat_timeout" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
+
 ../../go/create_cgc -query "*consul*serf*events*" -title "Consul serf events" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*serf*events*consul:new-leader*" -title "Consul serf events consul:new-leader" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
 ../../go/create_cgc -query "*consul*serf*member*failed*" -title "Consul serf member failed" -tags "creator:api,role:server,service:consul,data-type:counter,group:secondary"
@@ -57,6 +63,7 @@
 ../../go/create_cgc -query "*consul*consul*fsm*session*create*"	-title "Consul fsm session create"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*consul*fsm*session*destroy*"	-title "Consul fsm session destroy"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*consul*fsm*tombstone*reap*"	-title "Consul fsm tombstone reap"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
+
 ../../go/create_cgc -query "*consul*consul*http*DELETE*v1*kv*_*"	-title "Consul http DELETE v1 kv _"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
 ../../go/create_cgc -query "*consul*consul*http*GET*v1*acl*list*"	-title "Consul http GET v1 acl list"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
 ../../go/create_cgc -query "*consul*consul*http*GET*v1*agent*checks*"	-title "Consul http GET v1 agent checks"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
@@ -81,9 +88,11 @@
 ../../go/create_cgc -query "*consul*consul*http*PUT*v1*kv*_*"	-title "Consul http PUT v1 kv _"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
 ../../go/create_cgc -query "*consul*consul*http*PUT*v1*session*create*"	-title "Consul http PUT v1 session create"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
 ../../go/create_cgc -query "*consul*consul*http*PUT*v1*session*renew*_*"	-title "Consul http PUT v1 session renew _"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
+
 ../../go/create_cgc -query "*consul*memberlist*gossip*"	-title "Consul memberlist gossip"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*probeNode*"	-title "Consul memberlist probeNode"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*memberlist*pushPullNode*"	-title "Consul memberlist pushPullNode"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
+
 ../../go/create_cgc -query "*consul*raft*candidate*electSelf*"	-title "Consul raft candidate electSelf"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*raft*compactLogs*"	-title "Consul raft compactLogs"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*raft*fsm*apply*"	-title "Consul raft fsm apply"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:primary"
@@ -96,7 +105,9 @@
 ../../go/create_cgc -query "*consul*raft*snapshot*create*"	-title "Consul raft snapshot create"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*raft*snapshot*persist*"	-title "Consul raft snapshot persist"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*raft*snapshot*takeSnapshot*"	-title "Consul raft snapshot takeSnapshot"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
+
 ../../go/create_cgc -query "*consul*runtime*gc_pause_ns*"	-title "Consul runtime gc_pause_ns"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
+
 ../../go/create_cgc -query "*consul*serf*coordinate*adjustment-ms*"	-title "Consul serf coordinate adjustment-ms"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*serf*msgs*received*"	-title "Consul serf msgs received"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
 ../../go/create_cgc -query "*consul*serf*msgs*sent*"	-title "Consul serf msgs sent"	-tags "creator:api,role:server,service:consul,data-type:histogram,group:secondary"
