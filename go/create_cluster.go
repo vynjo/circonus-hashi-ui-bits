@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-// 	"io/ioutil"
+	// 	"io/ioutil"
 	"log"
-// 	"net/http"
-// 	"net/url"
+	// 	"net/http"
+	// 	"net/url"
 	"os"
-// 	"strings"
+	// 	"strings"
 
 	"github.com/circonus-labs/circonus-gometrics/api"
 )
-
 
 type checkBundleMetric struct {
 	Name   string   `json:"name"`
@@ -25,65 +24,63 @@ type checkBundleMetric struct {
 }
 
 type Querylist struct {
-	Query		string	`json:"query"`
-	Typep 		string	`json:"type"`
+	Query string `json:"query"`
+	Typep string `json:"type"`
 }
 
 type metricCluster struct {
-	Name 			string 		`json:"name"`
-	Cid 			string 		`json:"_cid"`
-	Queries 		[]Querylist	`json:"queries"`
-	Description 	string 		`json:"description"`
-	Tags 			[]string 	`json:"tags"`
+	Name        string      `json:"name"`
+	Cid         string      `json:"_cid"`
+	Queries     []Querylist `json:"queries"`
+	Description string      `json:"description"`
+	Tags        []string    `json:"tags"`
 }
 
-
 type ClusterDef struct {
-	Name   		string		`json:"name"`
-	Queries		[]Querylist	`json:"queries"`	
-	Tags   		string		`json:"tags"`
-} 
+	Name    string      `json:"name"`
+	Queries []Querylist `json:"queries"`
+	Tags    string      `json:"tags"`
+}
 
 var (
-	circapi  *api.API
+	circapi     *api.API
 	queryString string
 	titleString string
-	tagString string
+	tagString   string
 )
 
 func makeCluster() (metricCluster, error) {
 
 	var clusterReturn metricCluster
-	
-    cluster := ClusterDef {
-	    Name: titleString,
-	    Queries: []Querylist{
-		    {queryString, "average"},
-	    },
-	    Tags: tagString,
-    }
-// 	fmt.Println("ORIGINAL Cluster:", cluster)
 
- 	reqPath := "/metric_cluster"
+	cluster := ClusterDef{
+		Name: titleString,
+		Queries: []Querylist{
+			{queryString, "average"},
+		},
+		Tags: tagString,
+	}
+	// 	fmt.Println("ORIGINAL Cluster:", cluster)
+
+	reqPath := "/metric_cluster"
 
 	clusterJSON, err := json.Marshal(cluster)
-		if err != nil {
-		return  clusterReturn, err
- 	}
+	if err != nil {
+		return clusterReturn, err
+	}
 
- 	log.Printf("%v", string(clusterJSON))
- 	
- 	 
+	log.Printf("%v", string(clusterJSON))
+
 	response, err := circapi.Post(reqPath, clusterJSON)
 	if err != nil {
 		return clusterReturn, err
 	}
-	
+
 	err = json.Unmarshal(response, &clusterReturn)
-	
-// 	log.Printf("clusterReturn: %s\n", clusterReturn)
+
+	// 	log.Printf("clusterReturn: %s\n", clusterReturn)
 	log.Printf("Created Cluster: %s\n", response)
-	
+
 	return clusterReturn, nil
 }
 
@@ -98,9 +95,9 @@ func setup() {
 	flag.StringVar(&apiKey, "key", "", "Circonus API Token Key [none] (CIRCONUS_API_KEY)")
 	flag.StringVar(&apiApp, "app", "", "Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)")
 	flag.StringVar(&apiURL, "apiurl", "", "Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)")
-	flag.StringVar(&queryString, "query", "", "The Query used to search [none]" )
-	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]" )
-	flag.StringVar(&tagString, "tags", "", "Tags to include [none]" )
+	flag.StringVar(&queryString, "query", "", "The Query used to search [none]")
+	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]")
+	flag.StringVar(&tagString, "tags", "", "Tags to include [none]")
 	flag.BoolVar(&debug, "debug", false, "Enable Circonus API debugging")
 
 	flag.Parse()
@@ -144,7 +141,7 @@ func setup() {
 		log.Printf("Must Include a Query String %+v\n", err)
 		os.Exit(1)
 	}
-	
+
 	if titleString == "" {
 		log.Printf("Must Title String %+v\n", err)
 		os.Exit(1)
@@ -154,7 +151,7 @@ func setup() {
 func main() {
 
 	setup()
-	
+
 	clusterReturn, err := makeCluster()
 	if err != nil {
 		log.Printf("ERROR: creating metric cluster %v\n", err)

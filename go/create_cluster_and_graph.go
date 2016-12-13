@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-// 	"io/ioutil"
+	// 	"io/ioutil"
 	"log"
-// 	"net/http"
-// 	"net/url"
+	// 	"net/http"
+	// 	"net/url"
 	"os"
 	"strings"
 
@@ -24,92 +24,89 @@ type checkBundleMetric struct {
 }
 
 type Querylist struct {
-	Query		string	`json:"query"`
-	Typep 		string	`json:"type"`
+	Query string `json:"query"`
+	Typep string `json:"type"`
 }
 
 type metricCluster struct {
-	Name 			string 		`json:"name"`
-	Cid 			string 		`json:"_cid"`
-	Queries 		[]Querylist	`json:"queries"`
-	Description 	string 		`json:"description"`
-	Tags 			[]string 	`json:"tags"`
+	Name        string      `json:"name"`
+	Cid         string      `json:"_cid"`
+	Queries     []Querylist `json:"queries"`
+	Description string      `json:"description"`
+	Tags        []string    `json:"tags"`
 }
 
-
 type ClusterDef struct {
-	Name   		string		`json:"name"`
-	Queries		[]Querylist	`json:"queries"`	
-	Tags   		[]string		`json:"tags"`
-} 
+	Name    string      `json:"name"`
+	Queries []Querylist `json:"queries"`
+	Tags    []string    `json:"tags"`
+}
 
 // Need to build out rest of structure so datapoints can be added later
 type DatapointsDef struct {
-	Alpha		string		`json:"alpha"`
-    Axis		string		`json:"axis:"`
-    CheckID		int			`json:"check_id"`
-//     color: #0000ff,
-//     data_formula: null,
-//     derive: gauge,
-//     hidden: false,
-//     legend_formula: null,
-//     metric_name: bytes,
-//     metric_type: numeric,
-//     name: Bytes,
-//     stack: null
+	Alpha   string `json:"alpha"`
+	Axis    string `json:"axis:"`
+	CheckID int    `json:"check_id"`
+	//     color: #0000ff,
+	//     data_formula: null,
+	//     derive: gauge,
+	//     hidden: false,
+	//     legend_formula: null,
+	//     metric_name: bytes,
+	//     metric_type: numeric,
+	//     name: Bytes,
+	//     stack: null
 }
 type graphMetricClusters struct {
-	LegendFormula 		string 		`json:"legend_formula"`
-	Stack 				int			`json:"stack"`
-	Name 				string 		`json:"name"`
-	AggregateFunction 	string 		`json:"aggregate_function"`
-	MetricCluster 		string 		`json:"metric_cluster"`
-	Axis 				string 		`json:"axis"`
-	DataFormula 		string 		`json:"data_formula"`
-	Hidden 				bool 		`json:"hidden"`
+	LegendFormula     string `json:"legend_formula"`
+	Stack             int    `json:"stack"`
+	Name              string `json:"name"`
+	AggregateFunction string `json:"aggregate_function"`
+	MetricCluster     string `json:"metric_cluster"`
+	Axis              string `json:"axis"`
+	DataFormula       string `json:"data_formula"`
+	Hidden            bool   `json:"hidden"`
 }
 
 type clusterGraph struct {
-	Description 		string	 				`json:"description"`
-	MetricClusters		[]graphMetricClusters 	`json:"metric_clusters"`
-	Tags 				[]string 				`json:"tags"`
-	Title 				string 					`json:"title"`
-	Cid 				string 					`json:"_cid"`
-	Style 				string 					`json:"style"`
-	Datapoints			[]DatapointsDef			`json:"datapoints"`
+	Description    string                `json:"description"`
+	MetricClusters []graphMetricClusters `json:"metric_clusters"`
+	Tags           []string              `json:"tags"`
+	Title          string                `json:"title"`
+	Cid            string                `json:"_cid"`
+	Style          string                `json:"style"`
+	Datapoints     []DatapointsDef       `json:"datapoints"`
 }
 
 var (
-	circapi  *api.API
+	circapi     *api.API
 	queryString string
 	titleString string
-	tagString string
+	tagString   string
 )
 
 func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error) {
-	
-	graph  = clusterGraph {
-		Datapoints: []DatapointsDef{	
-		},
+
+	graph = clusterGraph{
+		Datapoints:  []DatapointsDef{},
 		Description: Cluster.Description,
-		Title: Cluster.Name,
+		Title:       Cluster.Name,
 		MetricClusters: []graphMetricClusters{
 			{MetricCluster: Cluster.Cid,
-			Name: Cluster.Name,
-			Axis: "l",
-			AggregateFunction: "none"},
+				Name:              Cluster.Name,
+				Axis:              "l",
+				AggregateFunction: "none"},
 		},
-		Tags: Cluster.Tags,
+		Tags:  Cluster.Tags,
 		Style: "line",
-
 	}
-// 	log.Printf("Graph CID:", graph)	
- 	reqPath := "/graph"
- 	graphJSON, err := json.Marshal(graph)
-		if err != nil {
-		return  graph, err
- 	}
-//  	fmt.Printf("Graph Definition: %v", string(graphJSON))
+	// 	log.Printf("Graph CID:", graph)
+	reqPath := "/graph"
+	graphJSON, err := json.Marshal(graph)
+	if err != nil {
+		return graph, err
+	}
+	//  	fmt.Printf("Graph Definition: %v", string(graphJSON))
 	response, err := circapi.Post(reqPath, graphJSON)
 	if err != nil {
 		return graph, err
@@ -125,35 +122,35 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 func makeCluster() (metricCluster, error) {
 
 	var clusterReturn metricCluster
-	cluster := ClusterDef {
-	    Name: titleString,
-	    Queries: []Querylist{
-		    {queryString, "average"},
-	    },
-	    Tags: strings.Split(tagString,","),
-    }
-// 	fmt.Println("ORIGINAL Cluster:", cluster)
- 	reqPath := "/metric_cluster"
+	cluster := ClusterDef{
+		Name: titleString,
+		Queries: []Querylist{
+			{queryString, "average"},
+		},
+		Tags: strings.Split(tagString, ","),
+	}
+	// 	fmt.Println("ORIGINAL Cluster:", cluster)
+	reqPath := "/metric_cluster"
 
 	clusterJSON, err := json.Marshal(cluster)
-		if err != nil {
-		return  clusterReturn, err
- 	}
+	if err != nil {
+		return clusterReturn, err
+	}
 
- 	log.Printf("%v", string(clusterJSON))
- 	
+	log.Printf("%v", string(clusterJSON))
+
 	response, err := circapi.Post(reqPath, clusterJSON)
 	if err != nil {
 		return clusterReturn, err
 	}
-	
+
 	err = json.Unmarshal(response, &clusterReturn)
 	if err != nil {
 		return clusterReturn, err
 	}
-// 	log.Printf("clusterReturn: %s\n", clusterReturn)
+	// 	log.Printf("clusterReturn: %s\n", clusterReturn)
 	log.Printf("Created Cluster: %s\n", response)
-	
+
 	return clusterReturn, nil
 }
 
@@ -168,9 +165,9 @@ func setup() {
 	flag.StringVar(&apiKey, "key", "", "Circonus API Token Key [none] (CIRCONUS_API_KEY)")
 	flag.StringVar(&apiApp, "app", "", "Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)")
 	flag.StringVar(&apiURL, "apiurl", "", "Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)")
-	flag.StringVar(&queryString, "query", "", "The Query used to search [none]" )
-	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]" )
-	flag.StringVar(&tagString, "tags", "", "Tags to include [none]" )
+	flag.StringVar(&queryString, "query", "", "The Query used to search [none]")
+	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]")
+	flag.StringVar(&tagString, "tags", "", "Tags to include [none]")
 	flag.BoolVar(&debug, "debug", false, "Enable Circonus API debugging")
 
 	flag.Parse()
@@ -214,7 +211,7 @@ func setup() {
 		log.Printf("Must Include a Query String %+v\n", err)
 		os.Exit(1)
 	}
-	
+
 	if titleString == "" {
 		log.Printf("Must Title String %+v\n", err)
 		os.Exit(1)
@@ -224,7 +221,7 @@ func setup() {
 func main() {
 
 	setup()
-	
+
 	clusterReturn, err := makeCluster()
 	if err != nil {
 		log.Printf("ERROR: creating metric cluster %v\n", err)

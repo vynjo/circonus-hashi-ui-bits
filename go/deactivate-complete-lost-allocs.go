@@ -298,8 +298,8 @@ func main() {
 				os.Exit(1)
 			}
 		}
-	}	
-	
+	}
+
 	lostAllocations, err := getLostAllocations()
 	if err != nil {
 		log.Printf("ERROR: retrieving allocations %v\n", err)
