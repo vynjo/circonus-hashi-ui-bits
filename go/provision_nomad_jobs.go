@@ -71,8 +71,8 @@ type NomadJob struct {
 func getJobs() ([]NomadJob, error) {
 
 	reqURL := nomadURL.String()
-	if !strings.Contains(reqURL, "v1/jobs") {
-		reqURL += "v1/jobs"
+	if !strings.Contains(reqURL, "jobs") {
+		reqURL += "jobs"
 	}
 	log.Printf("URL = %v\n", reqURL)
 
@@ -151,21 +151,20 @@ func setup() {
 		log.Printf("ERROR: allocating Circonus API %v\n", err)
 		os.Exit(1)
 	}
-
 	if nomadAPIURL == "" {
 		nomadAPIURL = os.Getenv("NOMAD_API_URL")
+		log.Printf("URL before = %v\n", nomadAPIURL)
+
 		if nomadAPIURL == "" {
 			nomadAPIURL = "http://localhost:4646/v1/jobs"
 		} else {
-			if !strings.Contains(nomadAPIURL, "jobs") {
-				nomadAPIURL += "jobs"
-			} else if strings.Contains(nomadAPIURL, "allocations") {
-				lastBin := strings.LastIndex( nomadAPIURL, "allocations" )
-				nomadAPIURL = nomadAPIURL[0:lastBin]
-				nomadAPIURL += "jobs"
-			}
+			if strings.Contains(nomadAPIURL, "allocations") {
+				nomadAPIURL = strings.Replace(nomadAPIURL, "allocations", "jobs", 1)
+			} 			
 		}
-	}	
+	}
+		log.Printf("URL after = %v\n", nomadAPIURL)
+
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
@@ -176,10 +175,12 @@ func setup() {
 func processAllocation() {
 	Continue := 1
 // 	AlreadyProcessed := "The value you supplied must be unique"
+log.Printf("All ready provisioned")	
 	clusterReturn, err := makeCluster()
 	if err != nil {
 		if strings.Contains(err.Error(), "unique") {
-			Continue = 0;			
+			Continue = 0;
+// 			log.Printf("All ready provisioned")	
 		} else {
 			log.Printf("ERROR: creating metric cluster %v\n", err)
 			os.Exit(1)
@@ -233,51 +234,51 @@ func main() {
 		log.Printf("Processing job %s with status -  %s  (%s:%s)\n", job.Name, job.Status, job.Type, job.ID)
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*system" 
 		titleString = "Nomad Job " + job.Name + " cpu system" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_periods"
 		titleString = "Nomad Job " + job.Name + " cpu throttled_periods" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_time" 
 		titleString = "Nomad Job " + job.Name + " cpu throttled_time" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_percent" 
 		titleString = "Nomad Job " + job.Name + " cpu total_percent" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_ticks" 
 		titleString = "Nomad Job " + job.Name + " cpu total_ticks" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*user" 
 		titleString = "Nomad Job " + job.Name + " cpu user" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*cache" 
 		titleString = "Nomad Job " + job.Name + " memory cache" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_max_usage" 
 		titleString = "Nomad Job " + job.Name + " memory kernel_max_usage" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_usage" 
 		titleString = "Nomad Job " + job.Name + " memory kernel_usage" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*max_usage" 
 		titleString = "Nomad Job " + job.Name + " memory max_usage" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*rss" 
 		titleString = "Nomad Job " + job.Name + " memory rss" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*memory*swap" 
 		titleString = "Nomad Job " + job.Name + " memory swap" 
-		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary," + "allocation:" + job.Name
 		processAllocation()
 
 	}
