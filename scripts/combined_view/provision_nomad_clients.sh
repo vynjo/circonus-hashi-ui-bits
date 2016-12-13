@@ -4,16 +4,16 @@
 ##gauge
 
 
-../../go/create_cgc -query "nomad*client*host*cpu*cpu0*idle" -title "Nomad client host cpu cpu0 idle" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*cpu*cpu0*system" -title "Nomad client host cpu cpu0 system" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*cpu*cpu0*total" -title "Nomad client host cpu cpu0 total" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*cpu*cpu0*user" -title "Nomad client host cpu cpu0 user" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*cpu*idle" -title "Nomad client host cpu idle" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*cpu*system" -title "Nomad client host cpu system" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*cpu*total" -title "Nomad client host cpu total" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*cpu*user" -title "Nomad client host cpu user" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
 
-../../go/create_cgc -query "nomad*client*host*disk*/dev/sda1*available" -title "Nomad client host disk /dev/sda1 available" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*disk*/dev/sda1*inodes_percent" -title "Nomad client host disk /dev/sda1 inodes_percent" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*disk*/dev/sda1*size" -title "Nomad client host disk /dev/sda1 size" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*disk*/dev/sda1*used" -title "Nomad client host disk /dev/sda1 used" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
-../../go/create_cgc -query "nomad*client*host*disk*/dev/sda1*used_percent" -title "Nomad client host disk /dev/sda1 used_percent" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*disk*available" -title "Nomad client host disk /dev/sda1 available" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*disk*inodes_percent" -title "Nomad client host disk /dev/sda1 inodes_percent" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*disk*size" -title "Nomad client host disk size" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*disk*used" -title "Nomad client host disk used" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
+../../go/create_cgc -query "nomad*client*host*disk*used_percent" -title "Nomad client host disk used_percent" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
 
 ../../go/create_cgc -query "nomad*client*host*memory*available" -title "Nomad client host memory available" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
 ../../go/create_cgc -query "nomad*client*host*memory*free" -title "Nomad client host memory free" -tags "creator:api,role:client,service:nomad,data-type:gauge,group:primary"
