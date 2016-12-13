@@ -148,18 +148,17 @@ func setup() *api.Config {
 
 	if nomadAPIURL == "" {
 		nomadAPIURL = os.Getenv("NOMAD_API_URL")
-		log.Printf("URL before = %v\n", nomadAPIURL)
+// 		log.Printf("URL before = %v\n", nomadAPIURL)
 
 		if nomadAPIURL == "" {
-			nomadAPIURL = "http://localhost:4646/v1/allocations"
+			nomadAPIURL = "http://localhost:4646/v1/jobs"
 		} else {
 			if strings.Contains(nomadAPIURL, "allocations") {
 				nomadAPIURL = strings.Replace(nomadAPIURL, "allocations", "jobs", 1)
 			}
 		}
 	}
-	log.Printf("URL after = %v\n", nomadAPIURL)
-
+// 	log.Printf("URL after = %v\n", nomadAPIURL)
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
