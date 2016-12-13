@@ -71,8 +71,8 @@ type NomadJob struct {
 
 func getJobs() ([]NomadJob, error) {
 	reqURL := nomadURL.String()
-	if !strings.Contains(reqURL, "v1/jobs") {
-		reqURL += "v1/jobs"
+	if !strings.Contains(reqURL, "jobs") {
+		reqURL += "jobs"
 	}
 	log.Printf("URL = %v\n", reqURL)
 
@@ -148,18 +148,18 @@ func setup() *api.Config {
 
 	if nomadAPIURL == "" {
 		nomadAPIURL = os.Getenv("NOMAD_API_URL")
+		log.Printf("URL before = %v\n", nomadAPIURL)
+
 		if nomadAPIURL == "" {
-			nomadAPIURL = "http://localhost:4646/v1/jobs"
+			nomadAPIURL = "http://localhost:4646/v1/allocations"
 		} else {
-			if !strings.Contains(nomadAPIURL, "jobs") {
-				nomadAPIURL += "jobs"
-			} else if strings.Contains(nomadAPIURL, "allocations") {
-				lastBin := strings.LastIndex(nomadAPIURL, "allocations")
-				nomadAPIURL = nomadAPIURL[0:lastBin]
-				nomadAPIURL += "jobs"
+			if strings.Contains(nomadAPIURL, "allocations") {
+				nomadAPIURL = strings.Replace(nomadAPIURL, "allocations", "jobs", 1)
 			}
 		}
 	}
+	log.Printf("URL after = %v\n", nomadAPIURL)
+
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
@@ -171,7 +171,6 @@ func setup() *api.Config {
 
 func processAllocation(capi *api.API, query, title, tags string) {
 	Continue := 1
-	// 	AlreadyProcessed := "The value you supplied must be unique"
 
 	cluster := &lib.Cluster{
 		Name: title,
@@ -243,61 +242,61 @@ func main() {
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*system",
 			"Nomad Job "+job.Name+" cpu system",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*throttled_periods",
 			"Nomad Job "+job.Name+" cpu throttled_periods",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*throttled_time",
 			"Nomad Job "+job.Name+" cpu throttled_time",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*total_percent",
 			"Nomad Job "+job.Name+" cpu total_percent",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*total_ticks",
 			"Nomad Job "+job.Name+" cpu total_ticks",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*user",
 			"Nomad Job "+job.Name+" cpu user",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*cache",
 			"Nomad Job "+job.Name+" memory cache",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*kernel_max_usage",
 			"Nomad Job "+job.Name+" memory kernel_max_usage",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*kernel_usage",
 			"Nomad Job "+job.Name+" memory kernel_usage",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*max_usage",
 			"Nomad Job "+job.Name+" memory max_usage",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*rss",
 			"Nomad Job "+job.Name+" memory rss",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*memory*swap",
 			"Nomad Job "+job.Name+" memory swap",
-			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary")
+			"creator:api,role:allocation,service:nomad,data-type:guage,group:primary"+"allocation:"+job.Name)
 	}
 }
