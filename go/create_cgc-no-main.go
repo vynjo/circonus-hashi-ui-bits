@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
-	"fmt"
+// 	"flag"
+// 	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -178,73 +178,73 @@ type caqlCheck struct {
 	Type 					string 			`json:"type"`
 }
 
-func setup() {
-	var err error
-	var apiKey string
-	var apiApp string
-	var apiURL string
-
-	var debug bool
-
-	flag.StringVar(&apiKey, "key", "", "Circonus API Token Key [none] (CIRCONUS_API_KEY)")
-	flag.StringVar(&apiApp, "app", "", "Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)")
-	flag.StringVar(&apiURL, "apiurl", "", "Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)")
-	flag.StringVar(&queryString, "query", "", "The Query used to search [none]" )
-	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]" )
-	flag.StringVar(&tagString, "tags", "", "Tags to include [none]" )
-	flag.BoolVar(&debug, "debug", false, "Enable Circonus API debugging")
-
-	flag.Parse()
-
-	cfg := &api.Config{}
-
-	if apiKey == "" {
-		apiKey = os.Getenv("CIRCONUS_API_KEY")
-		if apiKey == "" {
-			log.Printf("CIRCONUS_API_KEY is not set, exiting.\n")
-			os.Exit(1)
-		}
-	}
-	cfg.TokenKey = apiKey
-
-	if apiApp == "" {
-		apiApp := os.Getenv("CIRCONUS_API_APP")
-		if apiApp == "" {
-			apiApp = "nomad-metrics-reaper"
-		}
-	}
-	cfg.TokenApp = apiApp
-
-	if apiURL == "" {
-		apiURL = os.Getenv("CIRCONUS_API_URL")
-		if apiURL == "" {
-			apiURL = "https://api.circonus.com/"
-		}
-	}
-	
-	if tagString == "" {
-		tagString = "creator:api"
-	}
-	cfg.URL = apiURL
-
-	cfg.Debug = debug
-
-	circapi, err = api.NewAPI(cfg)
-	if err != nil {
-		log.Printf("ERROR: allocating Circonus API %v\n", err)
-		os.Exit(1)
-	}
-
-	if queryString == "" {
-		log.Printf("Must Include a Query String %+v\n", err)
-		os.Exit(1)
-	}
-	
-	if titleString == "" {
-		log.Printf("Must  have title string %+v\n", err)
-		os.Exit(1)
-	}
-}
+// func setup() {
+// 	var err error
+// 	var apiKey string
+// 	var apiApp string
+// 	var apiURL string
+// 
+// 	var debug bool
+// 
+// 	flag.StringVar(&apiKey, "key", "", "Circonus API Token Key [none] (CIRCONUS_API_KEY)")
+// 	flag.StringVar(&apiApp, "app", "", "Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)")
+// 	flag.StringVar(&apiURL, "apiurl", "", "Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)")
+// 	flag.StringVar(&queryString, "query", "", "The Query used to search [none]" )
+// 	flag.StringVar(&titleString, "title", "", "The name of the Culster, and Graph [none]" )
+// 	flag.StringVar(&tagString, "tags", "", "Tags to include [none]" )
+// 	flag.BoolVar(&debug, "debug", false, "Enable Circonus API debugging")
+// 
+// 	flag.Parse()
+// 
+// 	cfg := &api.Config{}
+// 
+// 	if apiKey == "" {
+// 		apiKey = os.Getenv("CIRCONUS_API_KEY")
+// 		if apiKey == "" {
+// 			log.Printf("CIRCONUS_API_KEY is not set, exiting.\n")
+// 			os.Exit(1)
+// 		}
+// 	}
+// 	cfg.TokenKey = apiKey
+// 
+// 	if apiApp == "" {
+// 		apiApp := os.Getenv("CIRCONUS_API_APP")
+// 		if apiApp == "" {
+// 			apiApp = "nomad-metrics-reaper"
+// 		}
+// 	}
+// 	cfg.TokenApp = apiApp
+// 
+// 	if apiURL == "" {
+// 		apiURL = os.Getenv("CIRCONUS_API_URL")
+// 		if apiURL == "" {
+// 			apiURL = "https://api.circonus.com/"
+// 		}
+// 	}
+// 	
+// 	if tagString == "" {
+// 		tagString = "creator:api"
+// 	}
+// 	cfg.URL = apiURL
+// 
+// 	cfg.Debug = debug
+// 
+// 	circapi, err = api.NewAPI(cfg)
+// 	if err != nil {
+// 		log.Printf("ERROR: allocating Circonus API %v\n", err)
+// 		os.Exit(1)
+// 	}
+// 
+// 	if queryString == "" {
+// 		log.Printf("Must Include a Query String %+v\n", err)
+// 		os.Exit(1)
+// 	}
+// 	
+// 	if titleString == "" {
+// 		log.Printf("Must  have title string %+v\n", err)
+// 		os.Exit(1)
+// 	}
+// }
 
 // search:metric:histogram("nomad*memberlist*gossip") | histogram:merge()
 // Based on QueryString creates a Caql Check combining a set of histograms into a merged histogram
@@ -549,55 +549,55 @@ func CreateCaqlGraph (caql caqlCheck) (returnGraph regularGraph, err error) {
 }
 
 
-func main() {
-
-	setup()
-	
-// 	queryString = queryString + "(active:1)"
-// 	log.Printf("%v\n", tagString)
-	if strings.Contains(tagString, "data-type:histogram") {
-// 		log.Printf("Adding Histogram")
-		caqlCheck, err := createCaqlCheckForHistograms()
-		if err != nil {
-			log.Printf("ERROR: creating merged histogram caql check %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
-		caqlgraph, err := CreateCaqlGraph(caqlCheck)
-		if err != nil {
-			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
-			os.Exit(1)
-		}
-		fmt.Printf("Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
-	} else {
-		clusterReturn, err := makeCluster()
-		if err != nil {
-			log.Printf("ERROR: creating metric cluster %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
-	
-		caqlCheck, err := createCaqlCheckForCluster()
-		if err != nil {
-			log.Printf("ERROR: creating caql check %v\n", err)
-			os.Exit(1)
-		}
-		
-		fmt.Printf("Cluster to Merged Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
-	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
-		
-		clusterGraph, err := makeGraphfromCluster(clusterReturn)
-		if err != nil {
-			log.Printf("ERROR: creating metric cluster graph%v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Cluster Graph Created: %v\n", clusterGraph.Cid)
-		caqlgraph, err := CreateCaqlGraph(caqlCheck)
-		if err != nil {
-			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
-			os.Exit(1)
-		}
-		fmt.Printf("Cluster to Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
-
-	}
-}
+// func main() {
+// 
+// 	setup()
+// 	
+// // 	queryString = queryString + "(active:1)"
+// // 	log.Printf("%v\n", tagString)
+// 	if strings.Contains(tagString, "data-type:histogram") {
+// // 		log.Printf("Adding Histogram")
+// 		caqlCheck, err := createCaqlCheckForHistograms()
+// 		if err != nil {
+// 			log.Printf("ERROR: creating merged histogram caql check %v\n", err)
+// 			os.Exit(1)
+// 		}
+// 		fmt.Printf("Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
+// 		caqlgraph, err := CreateCaqlGraph(caqlCheck)
+// 		if err != nil {
+// 			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
+// 			os.Exit(1)
+// 		}
+// 		fmt.Printf("Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
+// 	} else {
+// 		clusterReturn, err := makeCluster()
+// 		if err != nil {
+// 			log.Printf("ERROR: creating metric cluster %v\n", err)
+// 			os.Exit(1)
+// 		}
+// 		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
+// 	
+// 		caqlCheck, err := createCaqlCheckForCluster()
+// 		if err != nil {
+// 			log.Printf("ERROR: creating caql check %v\n", err)
+// 			os.Exit(1)
+// 		}
+// 		
+// 		fmt.Printf("Cluster to Merged Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
+// 	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
+// 		
+// 		clusterGraph, err := makeGraphfromCluster(clusterReturn)
+// 		if err != nil {
+// 			log.Printf("ERROR: creating metric cluster graph%v\n", err)
+// 			os.Exit(1)
+// 		}
+// 		fmt.Printf("Cluster Graph Created: %v\n", clusterGraph.Cid)
+// 		caqlgraph, err := CreateCaqlGraph(caqlCheck)
+// 		if err != nil {
+// 			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
+// 			os.Exit(1)
+// 		}
+// 		fmt.Printf("Cluster to Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
+// 
+// 	}
+// }

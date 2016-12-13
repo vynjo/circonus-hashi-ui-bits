@@ -42,131 +42,39 @@ type NomadJob struct {
 	JobModifyIndex 		int 		`json:"JobModifyIndex"`
 }
 
-type metricSearchResult struct {
-	CheckBundleID string   `json:"_check_bundle"`
-	Name          string   `json:"_metric_name"`
-	Type          string   `json:"_metric_type"`
-	Tags          []string `json:"tags"`
-	Units         string   `json:"units"`
-}
+// type metricSearchResult struct {
+// 	CheckBundleID string   `json:"_check_bundle"`
+// 	Name          string   `json:"_metric_name"`
+// 	Type          string   `json:"_metric_type"`
+// 	Tags          []string `json:"tags"`
+// 	Units         string   `json:"units"`
+// }
 
-type checkBundleMetric struct {
-	Name   string   `json:"name"`
-	Status string   `json:"status"`
-	Tags   []string `json:"tags"`
-	Type   string   `json:"type"`
-	Units  string   `json:"units"`
-	Result string   `json:"result,omitempty"`
-}
+// type checkBundleMetric struct {
+// 	Name   string   `json:"name"`
+// 	Status string   `json:"status"`
+// 	Tags   []string `json:"tags"`
+// 	Type   string   `json:"type"`
+// 	Units  string   `json:"units"`
+// 	Result string   `json:"result,omitempty"`
+// }
 
-type checkBundleMetricList struct {
-	Metrics []checkBundleMetric `json:"metrics"`
-}
-
-type checkBundleMetricResult struct {
-	CID     string              `json:"_cid"`
-	Metrics []checkBundleMetric `json:"metrics"`
-}
-
-func getAllocationMetrics(id string) ([]metricSearchResult, error) {
-
-	metricSearchURL := fmt.Sprintf("/metric?search=(active:1)*%s*", id)
-
-	metricsJSON, err := circapi.Get(metricSearchURL)
-	if err != nil {
-		return nil, err
-	}
-
-	metrics := []metricSearchResult{}
-
-	err = json.Unmarshal(metricsJSON, &metrics)
-	if err != nil {
-		return nil, err
-	}
-
-	return metrics, nil
-}
-
-func deactivateMetrics(checkBundleID string, metricList checkBundleMetricList) error {
-	reqPath := fmt.Sprintf("/check_bundle_metrics/%s", checkBundleID)
-
-	metricsJSON, err := json.Marshal(metricList)
-	if err != nil {
-		return err
-	}
-
-	response, err := circapi.Put(reqPath, metricsJSON)
-	if err != nil {
-		return err
-	}
-
-	result := checkBundleMetricResult{}
-	err = json.Unmarshal(response, &result)
-	if err != nil {
-		return err
-	}
-
-	for _, metric := range result.Metrics {
-		log.Printf("\tmetric: %s, status: %s, result: %s\n", metric.Name, metric.Status, metric.Result)
-	}
-
-	log.Println("---")
-
-	return nil
-}
-
-func updateMetrics(allocation Allocation) error {
-
-	log.Printf("\tchecking for active metrics\n")
-
-	allocationMetrics, err := getAllocationMetrics(allocation.ID)
-	if err != nil {
-		return err
-	}
-
-	if len(allocationMetrics) == 0 {
-		log.Printf("\t0 active metrics, skipping\n")
-		return nil
-	}
-
-	log.Printf("\tdeactivating %d active metrics\n", len(allocationMetrics))
-
-	checkBundleID := ""
-	metrics := []checkBundleMetric{}
-
-	for _, metric := range allocationMetrics {
-		if checkBundleID == "" {
-			checkBundleID = strings.Replace(metric.CheckBundleID, "/check_bundle/", "", -1)
-		}
-		metrics = append(metrics, checkBundleMetric{
-			Name:   metric.Name,
-			Status: "available",
-			Tags:   metric.Tags,
-			Type:   metric.Type,
-			Units:  metric.Units,
-		})
-	}
-
-	metricList := checkBundleMetricList{metrics}
-
-	err = deactivateMetrics(checkBundleID, metricList)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var (
-	circapi  *api.API
-	nomadURL *url.URL
-)
+// type checkBundleMetricList struct {
+// 	Metrics []checkBundleMetric `json:"metrics"`
+// }
+// 
+// type checkBundleMetricResult struct {
+// 	CID     string              `json:"_cid"`
+// 	Metrics []checkBundleMetric `json:"metrics"`
+// }
 
 func getJobs() ([]NomadJob, error) {
+
 	reqURL := nomadURL.String()
 	if !strings.Contains(reqURL, "v1/jobs") {
 		reqURL += "v1/jobs"
 	}
+	log.Printf("URL = %v\n", reqURL)
 
 	res, err := http.Get(reqURL)
 	if err != nil {
@@ -188,6 +96,10 @@ func getJobs() ([]NomadJob, error) {
 
 	return nomadjobs, nil
 }
+
+var (
+	nomadURL *url.URL
+)
 
 func setup() {
 	var err error
@@ -243,13 +155,60 @@ func setup() {
 	if nomadAPIURL == "" {
 		nomadAPIURL = os.Getenv("NOMAD_API_URL")
 		if nomadAPIURL == "" {
-			nomadAPIURL = "http://localhost:4646/"
+			nomadAPIURL = "http://localhost:4646/v1/jobs"
+		} else {
+			if !strings.Contains(nomadAPIURL, "jobs") {
+				nomadAPIURL += "jobs"
+			} else if strings.Contains(nomadAPIURL, "allocations") {
+				lastBin := strings.LastIndex( nomadAPIURL, "allocations" )
+				nomadAPIURL = nomadAPIURL[0:lastBin]
+				nomadAPIURL += "jobs"
+			}
 		}
-	}
+	}	
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
 		os.Exit(1)
+	}
+}
+
+func processAllocation() {
+	Continue := 1
+// 	AlreadyProcessed := "The value you supplied must be unique"
+	clusterReturn, err := makeCluster()
+	if err != nil {
+		if strings.Contains(err.Error(), "unique") {
+			Continue = 0;			
+		} else {
+			log.Printf("ERROR: creating metric cluster %v\n", err)
+			os.Exit(1)
+		}
+	}
+	if Continue == 1 {
+		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
+	
+		caqlCheck, err := createCaqlCheckForCluster()
+		if err != nil {
+			log.Printf("ERROR: creating caql check %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("Cluster to Merged Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
+	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
+		
+		clusterGraph, err := makeGraphfromCluster(clusterReturn)
+		if err != nil {
+			log.Printf("ERROR: creating metric cluster graph%v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Cluster Graph Created: %v\n", clusterGraph.Cid)
+		caqlgraph, err := CreateCaqlGraph(caqlCheck)
+		if err != nil {
+			log.Printf("ERROR: Creating CAQL Graph: %v, Error:%v\n", caqlgraph, err)
+			os.Exit(1)
+		}
+		fmt.Printf("Cluster to Merged Histogram Graph Created: %v\n", caqlgraph.Cid)
 	}
 }
 
@@ -272,11 +231,55 @@ func main() {
 
 	for _, job := range nomadjobs {
 		log.Printf("Processing job %s with status -  %s  (%s:%s)\n", job.Name, job.Status, job.Type, job.ID)
-// 		err := updateMetrics(allocation)
-// 		if err != nil {
-// 			log.Printf("ERROR: %+v", err)
-// 			os.Exit(1)
-// 		}
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*system" 
+		titleString = "Nomad Job " + job.Name + " cpu system" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_periods"
+		titleString = "Nomad Job " + job.Name + " cpu throttled_periods" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_time" 
+		titleString = "Nomad Job " + job.Name + " cpu throttled_time" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_percent" 
+		titleString = "Nomad Job " + job.Name + " cpu total_percent" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_ticks" 
+		titleString = "Nomad Job " + job.Name + " cpu total_ticks" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*user" 
+		titleString = "Nomad Job " + job.Name + " cpu user" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*cache" 
+		titleString = "Nomad Job " + job.Name + " memory cache" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_max_usage" 
+		titleString = "Nomad Job " + job.Name + " memory kernel_max_usage" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_usage" 
+		titleString = "Nomad Job " + job.Name + " memory kernel_usage" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*max_usage" 
+		titleString = "Nomad Job " + job.Name + " memory max_usage" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*rss" 
+		titleString = "Nomad Job " + job.Name + " memory rss" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*swap" 
+		titleString = "Nomad Job " + job.Name + " memory swap" 
+		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
+		processAllocation()
+
 	}
 }
 
