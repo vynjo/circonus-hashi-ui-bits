@@ -31,15 +31,15 @@ type Allocation struct {
 }
 
 type NomadJob struct {
-	ID 					string 		`json:"ID"`
-	ParentID 			string		`json:"ParentID"`
-	Name 				string		`json:"Name"`
-	Type 				string		`json:"Type"`
-	Status 				string 		`json:"Status"`
-	StatusDescription 	string 		`json:"StatusDescription"`
-	CreateIndex 		int 		`json:"CreateIndex"`
-	ModifyIndex 		int 		`json:"ModifyIndex"`
-	JobModifyIndex 		int 		`json:"JobModifyIndex"`
+	ID                string `json:"ID"`
+	ParentID          string `json:"ParentID"`
+	Name              string `json:"Name"`
+	Type              string `json:"Type"`
+	Status            string `json:"Status"`
+	StatusDescription string `json:"StatusDescription"`
+	CreateIndex       int    `json:"CreateIndex"`
+	ModifyIndex       int    `json:"ModifyIndex"`
+	JobModifyIndex    int    `json:"JobModifyIndex"`
 }
 
 // type metricSearchResult struct {
@@ -62,7 +62,7 @@ type NomadJob struct {
 // type checkBundleMetricList struct {
 // 	Metrics []checkBundleMetric `json:"metrics"`
 // }
-// 
+//
 // type checkBundleMetricResult struct {
 // 	CID     string              `json:"_cid"`
 // 	Metrics []checkBundleMetric `json:"metrics"`
@@ -160,12 +160,12 @@ func setup() {
 			if !strings.Contains(nomadAPIURL, "jobs") {
 				nomadAPIURL += "jobs"
 			} else if strings.Contains(nomadAPIURL, "allocations") {
-				lastBin := strings.LastIndex( nomadAPIURL, "allocations" )
+				lastBin := strings.LastIndex(nomadAPIURL, "allocations")
 				nomadAPIURL = nomadAPIURL[0:lastBin]
 				nomadAPIURL += "jobs"
 			}
 		}
-	}	
+	}
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
@@ -175,11 +175,11 @@ func setup() {
 
 func processAllocation() {
 	Continue := 1
-// 	AlreadyProcessed := "The value you supplied must be unique"
+	// 	AlreadyProcessed := "The value you supplied must be unique"
 	clusterReturn, err := makeCluster()
 	if err != nil {
 		if strings.Contains(err.Error(), "unique") {
-			Continue = 0;			
+			Continue = 0
 		} else {
 			log.Printf("ERROR: creating metric cluster %v\n", err)
 			os.Exit(1)
@@ -187,16 +187,16 @@ func processAllocation() {
 	}
 	if Continue == 1 {
 		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
-	
+
 		caqlCheck, err := createCaqlCheckForCluster()
 		if err != nil {
 			log.Printf("ERROR: creating caql check %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Printf("Cluster to Merged Histogram CAQL Check Created: %v\n", caqlCheck.Cid)
-	// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
-		
+		// 	fmt.Printf("Total Returned to main: %v\n", caqlCheck)
+
 		clusterGraph, err := makeGraphfromCluster(clusterReturn)
 		if err != nil {
 			log.Printf("ERROR: creating metric cluster graph%v\n", err)
@@ -231,55 +231,54 @@ func main() {
 
 	for _, job := range nomadjobs {
 		log.Printf("Processing job %s with status -  %s  (%s:%s)\n", job.Name, job.Status, job.Type, job.ID)
-		queryString = "nomad*client*allocs*" + job.Name + "*cpu*system" 
-		titleString = "Nomad Job " + job.Name + " cpu system" 
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*system"
+		titleString = "Nomad Job " + job.Name + " cpu system"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
 		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_periods"
-		titleString = "Nomad Job " + job.Name + " cpu throttled_periods" 
+		titleString = "Nomad Job " + job.Name + " cpu throttled_periods"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_time" 
-		titleString = "Nomad Job " + job.Name + " cpu throttled_time" 
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*throttled_time"
+		titleString = "Nomad Job " + job.Name + " cpu throttled_time"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_percent" 
-		titleString = "Nomad Job " + job.Name + " cpu total_percent" 
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_percent"
+		titleString = "Nomad Job " + job.Name + " cpu total_percent"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_ticks" 
-		titleString = "Nomad Job " + job.Name + " cpu total_ticks" 
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*total_ticks"
+		titleString = "Nomad Job " + job.Name + " cpu total_ticks"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*cpu*user" 
-		titleString = "Nomad Job " + job.Name + " cpu user" 
+		queryString = "nomad*client*allocs*" + job.Name + "*cpu*user"
+		titleString = "Nomad Job " + job.Name + " cpu user"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*cache" 
-		titleString = "Nomad Job " + job.Name + " memory cache" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*cache"
+		titleString = "Nomad Job " + job.Name + " memory cache"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_max_usage" 
-		titleString = "Nomad Job " + job.Name + " memory kernel_max_usage" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_max_usage"
+		titleString = "Nomad Job " + job.Name + " memory kernel_max_usage"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_usage" 
-		titleString = "Nomad Job " + job.Name + " memory kernel_usage" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*kernel_usage"
+		titleString = "Nomad Job " + job.Name + " memory kernel_usage"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*max_usage" 
-		titleString = "Nomad Job " + job.Name + " memory max_usage" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*max_usage"
+		titleString = "Nomad Job " + job.Name + " memory max_usage"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*rss" 
-		titleString = "Nomad Job " + job.Name + " memory rss" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*rss"
+		titleString = "Nomad Job " + job.Name + " memory rss"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
-		queryString = "nomad*client*allocs*" + job.Name + "*memory*swap" 
-		titleString = "Nomad Job " + job.Name + " memory swap" 
+		queryString = "nomad*client*allocs*" + job.Name + "*memory*swap"
+		titleString = "Nomad Job " + job.Name + " memory swap"
 		tagString = "creator:api,role:allocation,service:nomad,data-type:guage,group:primary"
 		processAllocation()
 
 	}
 }
-
