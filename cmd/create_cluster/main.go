@@ -12,6 +12,7 @@ import (
 	// 	"strings"
 
 	"github.com/circonus-labs/circonus-gometrics/api"
+	"github.com/vynjo/circonus-hashi-ui-bits/lib"
 )
 
 type checkBundleMetric struct {
@@ -23,25 +24,6 @@ type checkBundleMetric struct {
 	Result string   `json:"result,omitempty"`
 }
 
-type Querylist struct {
-	Query string `json:"query"`
-	Typep string `json:"type"`
-}
-
-type metricCluster struct {
-	Name        string      `json:"name"`
-	Cid         string      `json:"_cid"`
-	Queries     []Querylist `json:"queries"`
-	Description string      `json:"description"`
-	Tags        []string    `json:"tags"`
-}
-
-type ClusterDef struct {
-	Name    string      `json:"name"`
-	Queries []Querylist `json:"queries"`
-	Tags    string      `json:"tags"`
-}
-
 var (
 	circapi     *api.API
 	queryString string
@@ -49,13 +31,12 @@ var (
 	tagString   string
 )
 
-func makeCluster() (metricCluster, error) {
+func makeCluster() (lib.MetricCluster, error) {
+	var clusterReturn lib.MetricCluster
 
-	var clusterReturn metricCluster
-
-	cluster := ClusterDef{
+	cluster := lib.Cluster{
 		Name: titleString,
-		Queries: []Querylist{
+		Queries: []lib.Querylist{
 			{queryString, "average"},
 		},
 		Tags: tagString,
@@ -149,7 +130,6 @@ func setup() {
 }
 
 func main() {
-
 	setup()
 
 	clusterReturn, err := makeCluster()
