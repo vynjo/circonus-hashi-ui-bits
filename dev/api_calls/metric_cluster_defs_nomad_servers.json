@@ -1,9 +1,0 @@
-
-/* Server Memberlist Metrics */
-
-
-node create-clusterandgraph.js --query "*nomad*memberlist*degraded*probe (active:1)" --token 7339c41b-48ab-617e-8859-c60ab96edb90  --title "Nomad Server Memberlist Degraded Probe" --tags "[hs-type:client,hs-type:visualize,service:hashistack,service:nomad]"
-
-/* enableddisablednomad`memberlist`gossip0.00 */
-
-node create-clusterandgraph.js --query "*nomad*memberlist*degraded*probe (active:1)" --token 7339c41b-48ab-617e-8859-c60ab96edb90  --title "Nomad Server Memberlist Degraded Probe" --tags "[hs-type:client,hs-type:visualize,service:hashistack,service:nomad]"
