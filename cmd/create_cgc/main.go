@@ -543,12 +543,48 @@ func CreateCaqlGraph(caql caqlCheck) (returnGraph regularGraph, err error) {
 	return graph, err
 }
 
+func DoesCheckExist (checkTitle string) (result bool, err error) {
+
+	var check []caqlCheck
+	
+	searchString := strings.Replace(checkTitle, " ", "%20", -1)
+	metricSearchURL := fmt.Sprintf("/check?search=*%s*", searchString)
+
+// 	log.Printf("URL: %s\n", metricSearchURL)
+	
+	checkJSON, err := circapi.Get(metricSearchURL)
+	
+	err = json.Unmarshal(checkJSON, &check)
+	if err != nil {
+		return false, err
+	}
+
+	if len(check) == 0 {
+// 		log.Printf("Length is 0: %s\n", checkJSON[0])
+		return false, nil
+	} else {
+// 		log.Printf("Length is not 0: %s\n", len(checkJSON))
+		return true, nil
+	}
+}
+
 func main() {
 
 	setup()
 
 	// 	queryString = queryString + "(active:1)"
 	// 	log.Printf("%v\n", tagString)
+	
+	Exists, err := DoesCheckExist(titleString)
+	if err != nil {
+			log.Printf("ERROR: Error checking existance: %v\n", err)
+			os.Exit(1)
+	}
+	if Exists {
+		log.Printf("The check already exists for: %v\n", titleString)
+		os.Exit(1)
+
+	}
 	if strings.Contains(tagString, "data-type:histogram") {
 		// 		log.Printf("Adding Histogram")
 		caqlCheck, err := createCaqlCheckForHistograms()
