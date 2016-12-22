@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/circonus-labs/circonus-gometrics/api"
@@ -237,7 +238,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	excludeRE := regexp.MustCompile(`/periodic`)
 	for _, job := range nomadjobs {
+		if excludeRE.MatchString(job.Name) {
+			log.Printf("TRACE: Excluding job %s", job.Name)
+			continue
+		}
+
 		log.Printf("Processing job %s with status -  %s  (%s:%s)\n", job.Name, job.Status, job.Type, job.ID)
 		processAllocation(circapi,
 			"nomad*client*allocs*"+job.Name+"*cpu*system",
