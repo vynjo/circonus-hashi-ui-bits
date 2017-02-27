@@ -16,6 +16,17 @@ import (
 	"github.com/vynjo/circonus-hashi-ui-bits/lib"
 )
 
+type Querylist struct {
+	Query string `json:"query"`
+	Typep string `json:"type"`
+}
+
+type Cluster struct {
+	Name    string      `json:"name"`
+	Queries []Querylist `json:"queries"`
+	Tags    string      `json:"tags"`
+}
+
 // Allocation is a struct containing state of a nomad allocation
 type Allocation struct {
 	// ID of the allocation (UUID)
@@ -100,6 +111,7 @@ func getJobs() ([]NomadJob, error) {
 
 var (
 	nomadURL *url.URL
+	circapi  *api.API
 )
 
 func setup() *api.Config {
@@ -149,7 +161,7 @@ func setup() *api.Config {
 
 	if nomadAPIURL == "" {
 		nomadAPIURL = os.Getenv("NOMAD_API_URL")
-// 		log.Printf("URL before = %v\n", nomadAPIURL)
+		// 		log.Printf("URL before = %v\n", nomadAPIURL)
 
 		if nomadAPIURL == "" {
 			nomadAPIURL = "http://localhost:4646/v1/jobs"
@@ -159,7 +171,7 @@ func setup() *api.Config {
 			}
 		}
 	}
-// 	log.Printf("URL after = %v\n", nomadAPIURL)
+	// 	log.Printf("URL after = %v\n", nomadAPIURL)
 	nomadURL, err = url.Parse(nomadAPIURL)
 	if err != nil {
 		log.Printf("ERROR: parsing Nomad API URL %+v\n", err)
@@ -169,8 +181,69 @@ func setup() *api.Config {
 	return cfg
 }
 
+// func DoesCheckExist (checkTitle string) (result bool, err error) {
+//
+// 	var check []caqlCheck
+//
+// 	searchString := strings.Replace(checkTitle, " ", "%20", -1)
+// 	metricSearchURL := fmt.Sprintf("/check?search=*%s*", searchString)
+//
+// // 	log.Printf("URL: %s\n", metricSearchURL)
+//
+// 	checkJSON, err := circapi.Get(metricSearchURL)
+//
+// 	err = json.Unmarshal(checkJSON, &check)
+// 	if err != nil {
+// 		return false, err
+// 	}
+//
+// 	if len(check) == 0 {
+// // 		log.Printf("Length is 0: %s\n", checkJSON[0])
+// 		return false, nil
+// 	} else {
+// // 		log.Printf("Length is not 0: %s\n", len(checkJSON))
+// 		return true, nil
+// 	}
+// }
+
+func DoesClusterExist(clusterTitle string) (result bool, err error) {
+
+	var cluster []Cluster
+
+	// 	searchString := strings.Replace(clusterTitle, " ", "%20", -1)
+	// 	metricSearchURL := fmt.Sprintf("/checks?search=*%s*", searchString)
+
+	metricSearchURL := fmt.Sprintf("/checks?search=*foo*")
+
+	log.Printf("metricSearchURL: %v\n", metricSearchURL)
+
+	// 	log.Printf("URL: %s\n", metricSearchURL)
+
+	clusterJSON, err := circapi.Get(metricSearchURL)
+	if err != nil {
+		return false, err
+	}
+	log.Printf("clusterJSON: %v\n", clusterJSON)
+
+	err = json.Unmarshal(clusterJSON, &cluster)
+	if err != nil {
+		return false, err
+	}
+
+	if len(cluster) == 0 {
+		// 		log.Printf("Length is 0: %s\n", checkJSON[0])
+		return false, nil
+	} else {
+		// 		log.Printf("Length is not 0: %s\n", len(checkJSON))
+		return true, nil
+	}
+}
+
 func processAllocation(capi *api.API, query, title, tags string) {
-	Continue := 1
+
+	Stop, err := DoesClusterExist(title)
+
+	log.Printf("Stop: %v\n", Stop)
 
 	cluster := &lib.Cluster{
 		Name: title,
@@ -183,13 +256,13 @@ func processAllocation(capi *api.API, query, title, tags string) {
 	clusterReturn, err := lib.CreateCluster(capi, cluster)
 	if err != nil {
 		if strings.Contains(err.Error(), "unique") {
-			Continue = 0
+			Stop = true
 		} else {
 			log.Printf("ERROR: creating metric cluster %v\n", err)
 			os.Exit(1)
 		}
 	}
-	if Continue == 1 {
+	if Stop == false {
 		fmt.Printf("Cluster Created: %v\n", clusterReturn.Cid)
 
 		caqlCheck, err := lib.CreateCAQLCheckForCluster(capi, query, title, tags)

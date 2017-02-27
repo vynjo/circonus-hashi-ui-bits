@@ -58,7 +58,9 @@ func makeCluster() (lib.MetricCluster, error) {
 	}
 
 	err = json.Unmarshal(response, &clusterReturn)
-
+	if err != nil {
+		return clusterReturn, err
+	}
 	// 	log.Printf("clusterReturn: %s\n", clusterReturn)
 	log.Printf("Created Cluster: %s\n", response)
 
@@ -95,7 +97,7 @@ func setup() {
 	cfg.TokenKey = apiKey
 
 	if apiApp == "" {
-		apiApp := os.Getenv("CIRCONUS_API_APP")
+		apiApp = os.Getenv("CIRCONUS_API_APP")
 		if apiApp == "" {
 			apiApp = "nomad-metrics-reaper"
 		}

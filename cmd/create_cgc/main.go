@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/circonus-labs/circonus-gometrics/api"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/circonus-labs/circonus-gometrics/api"
 )
 
 type checkBundleMetric struct {
@@ -20,11 +21,13 @@ type checkBundleMetric struct {
 	Result string   `json:"result,omitempty"`
 }
 
+// Querylist for metricCluster
 type Querylist struct {
 	Query string `json:"query"`
 	Typep string `json:"type"`
 }
 
+// metricCluster defines the basics of a Circonus metric cluster
 type metricCluster struct {
 	Name        string      `json:"name"`
 	Cid         string      `json:"_cid"`
@@ -33,13 +36,14 @@ type metricCluster struct {
 	Tags        []string    `json:"tags"`
 }
 
+// ClusterDef defines the basics of a Circonus metric cluster
 type ClusterDef struct {
 	Name    string      `json:"name"`
 	Queries []Querylist `json:"queries"`
 	Tags    string      `json:"tags"`
 }
 
-// Need to build out rest of structure so datapoints can be added later
+// DatapointsDef Need to build out rest of structure so datapoints can be added later
 type DatapointsDef struct {
 	LegendFormula string `json:"legend_formula"`
 	Caql          string `json:"caql"`
@@ -65,6 +69,7 @@ type graphMetricClusters struct {
 	Axis              string `json:"axis"`
 	DataFormula       string `json:"data_formula"`
 	Hidden            bool   `json:"hidden"`
+	Color             string ` json:"color,omitempty"`
 }
 
 type clusterGraph struct {
@@ -75,6 +80,7 @@ type clusterGraph struct {
 	Cid            string                `json:"_cid"`
 	Style          string                `json:"style"`
 	Datapoints     []DatapointsDef       `json:"datapoints"`
+	// Color          string                `json:"color,omitempty"`
 }
 
 type regularGraph struct {
@@ -205,7 +211,7 @@ func setup() {
 	cfg.TokenKey = apiKey
 
 	if apiApp == "" {
-		apiApp := os.Getenv("CIRCONUS_API_APP")
+		apiApp = os.Getenv("CIRCONUS_API_APP")
 		if apiApp == "" {
 			apiApp = "nomad-metrics-reaper"
 		}
@@ -245,11 +251,11 @@ func setup() {
 
 // search:metric:histogram("nomad*memberlist*gossip") | histogram:merge()
 // Based on QueryString creates a Caql Check combining a set of histograms into a merged histogram
-func createCaqlCheckForHistograms() (caql_check caqlCheck, err error) {
+func createCaqlCheckForHistograms() (ccheck caqlCheck, err error) {
 
 	var caqlReturn caqlCheck
 
-	caql_check = caqlCheck{
+	ccheck = caqlCheck{
 		DisplayName: titleString + " (Merged Histogram)",
 		Target:      "q._caql",
 		Period:      60,
@@ -269,14 +275,14 @@ func createCaqlCheckForHistograms() (caql_check caqlCheck, err error) {
 	}
 	reqPath := "/check_bundle"
 
-	checkJSON, err := json.Marshal(caql_check)
+	checkJSON, err := json.Marshal(ccheck)
 	if err != nil {
-		return caql_check, err
+		return ccheck, err
 	}
 	//  	log.Printf(" Adding CAQL Check: %v\n", string(checkJSON))
 	response, err := circapi.Post(reqPath, checkJSON)
 	if err != nil {
-		return caql_check, err
+		return ccheck, err
 	}
 	// 	log.Printf("%v\n", response)
 	err = json.Unmarshal(response, &caqlReturn)
@@ -288,25 +294,25 @@ func createCaqlCheckForHistograms() (caql_check caqlCheck, err error) {
 }
 
 // Based on QueryString creates a Caql Check combining a cluster of numeric data into a histogram
-func createCaqlCheckForCluster() (caql_check caqlCheck, err error) {
+func createCaqlCheckForCluster() (ccheck caqlCheck, err error) {
 
 	var caqlReturn caqlCheck
 
-	var cluster_type string
+	var clusterType string
 
 	if strings.Contains(tagString, "counter") {
-		cluster_type = "counter"
+		clusterType = "counter"
 	} else if strings.Contains(tagString, "derive") {
-		cluster_type = "derivative"
+		clusterType = "derivative"
 	} else if strings.Contains(tagString, "count") {
-		cluster_type = "count"
+		clusterType = "count"
 	} else if strings.Contains(tagString, "text") {
-		cluster_type = "text"
+		clusterType = "text"
 	} else {
-		cluster_type = "average"
+		clusterType = "average"
 	}
 
-	caql_check = caqlCheck{
+	ccheck = caqlCheck{
 		DisplayName: titleString + " (Histogram)",
 		Target:      "q._caql",
 		Period:      60,
@@ -316,7 +322,7 @@ func createCaqlCheckForCluster() (caql_check caqlCheck, err error) {
 		Type:        "caql",
 		Brokers:     []string{"/broker/1490"},
 		Config: caqlConfig{
-			Query: "search:metric:" + cluster_type + "(\"" + queryString + "(active:1)" + "\") | histogram()",
+			Query: "search:metric:" + clusterType + "(\"" + queryString + "(active:1)" + "\") | histogram()",
 		},
 		Metrics: []caqlMetrics{
 			{Status: "active",
@@ -326,14 +332,14 @@ func createCaqlCheckForCluster() (caql_check caqlCheck, err error) {
 	}
 	reqPath := "/check_bundle"
 
-	checkJSON, err := json.Marshal(caql_check)
+	checkJSON, err := json.Marshal(ccheck)
 	if err != nil {
-		return caql_check, err
+		return ccheck, err
 	}
 	//  	log.Printf(" Adding CAQL Check: %v\n", string(checkJSON))
 	response, err := circapi.Post(reqPath, checkJSON)
 	if err != nil {
-		return caql_check, err
+		return ccheck, err
 	}
 	// 	log.Printf("%v\n", response)
 	err = json.Unmarshal(response, &caqlReturn)
@@ -354,7 +360,8 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 			{MetricCluster: Cluster.Cid,
 				Name:              Cluster.Name + " (Cluster)",
 				Axis:              "l",
-				AggregateFunction: "none"},
+				AggregateFunction: "none",
+				Color:             "#2F5DAB"},
 		},
 		Tags:  Cluster.Tags,
 		Style: "line",
@@ -380,24 +387,24 @@ func makeGraphfromCluster(Cluster metricCluster) (graph clusterGraph, err error)
 
 func makeCluster() (metricCluster, error) {
 
-	var cluster_type string
+	var clusterType string
 
 	if strings.Contains(tagString, "counter") {
-		cluster_type = "counter"
+		clusterType = "counter"
 	} else if strings.Contains(tagString, "derive") {
-		cluster_type = "derive"
+		clusterType = "derive"
 	} else if strings.Contains(tagString, "count") {
-		cluster_type = "count"
+		clusterType = "count"
 	} else if strings.Contains(tagString, "text") {
-		cluster_type = "text"
+		clusterType = "text"
 	} else {
-		cluster_type = "average"
+		clusterType = "average"
 	}
 	var clusterReturn metricCluster
 	cluster := ClusterDef{
 		Name: titleString,
 		Queries: []Querylist{
-			{queryString, cluster_type},
+			{queryString, clusterType},
 		},
 		Tags: tagString,
 	}
@@ -468,6 +475,7 @@ func addCaqlToGraph(graph clusterGraph, caql caqlCheck) (returnGraph clusterGrap
 	return graph, err
 }
 
+// CreateCaqlGraph creates a graph from a Caql Check
 func CreateCaqlGraph(caql caqlCheck) (returnGraph regularGraph, err error) {
 
 	checknum, _ := strconv.Atoi(strings.Replace(caql.Checks[0], "/check/", "", -1))
@@ -543,29 +551,30 @@ func CreateCaqlGraph(caql caqlCheck) (returnGraph regularGraph, err error) {
 	return graph, err
 }
 
-func DoesCheckExist (checkTitle string) (result bool, err error) {
+// DoesCheckExist checks to see if check already exists
+func DoesCheckExist(checkTitle string) (result bool, err error) {
 
 	var check []caqlCheck
-	
+
 	searchString := strings.Replace(checkTitle, " ", "%20", -1)
 	metricSearchURL := fmt.Sprintf("/check?search=*%s*", searchString)
 
-// 	log.Printf("URL: %s\n", metricSearchURL)
-	
+	// 	log.Printf("URL: %s\n", metricSearchURL)
+
 	checkJSON, err := circapi.Get(metricSearchURL)
-	
+	if err != nil {
+		return false, err
+	}
 	err = json.Unmarshal(checkJSON, &check)
 	if err != nil {
 		return false, err
 	}
 
 	if len(check) == 0 {
-// 		log.Printf("Length is 0: %s\n", checkJSON[0])
+		// 		log.Printf("Length is 0: %s\n", checkJSON[0])
 		return false, nil
-	} else {
-// 		log.Printf("Length is not 0: %s\n", len(checkJSON))
-		return true, nil
 	}
+	return true, nil
 }
 
 func main() {
@@ -574,11 +583,11 @@ func main() {
 
 	// 	queryString = queryString + "(active:1)"
 	// 	log.Printf("%v\n", tagString)
-	
+
 	Exists, err := DoesCheckExist(titleString)
 	if err != nil {
-			log.Printf("ERROR: Error checking existance: %v\n", err)
-			os.Exit(1)
+		log.Printf("ERROR: Error checking existance: %v\n", err)
+		os.Exit(1)
 	}
 	if Exists {
 		log.Printf("The check already exists for: %v\n", titleString)
