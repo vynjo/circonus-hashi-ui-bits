@@ -43,6 +43,10 @@ Each accepts the following flags:
 
 Accepts **apiurl, app, key,** and **tag**
 
+<p>**deactivate-metrics_by_search.go** - Delete a set of metrics searched for via query string.</p>
+
+Accepts **query*
+
 ### Node.js versions for
 - node/create-cluster.js
 - node/deactivate-complete-lost-allocs.js
