@@ -1,4 +1,4 @@
-# Circonus
+# Circonus/Terraform Example
 
 This is the Terraform repo for all things Circonus. It is actively being built out.
 
