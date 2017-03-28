@@ -31,14 +31,15 @@ Lots of TBD's:
 
 ## To configure your Consul, Nomad or Vault instances:
 ### Nomad Client - add the following to your client.hcl file:
-`telemetry {
-	circonus_api_token = "CIRCONUS_API_TOKEN"
-	publish_allocation_metrics = "true"
-	publish_node_metrics = "true"
-	circonus_check_tags = "type:client, service:hashistack, service:nomad"
-     circonus_submission_interval = "1s"
-}`
-
+<code>
+     telemetry {
+	         circonus_api_token = "CIRCONUS_API_TOKEN"
+	         publish_allocation_metrics = "true"
+              publish_node_metrics = "true"
+              circonus_check_tags = "type:client, service:hashistack, service:nomad"
+              circonus_submission_interval = "1s"
+}
+</code>
 ### Nomad Server - add the following to your server.hcl file:
 `telemetry {
 	circonus_api_token = "CIRCONUS-API-TOKEN"
