@@ -1,4 +1,4 @@
-# circonus-hashi-ui-bits
+# circonus-hashi-ui-bits GO tools
 <h2>Tools for Circonus and Hashicorp integration</h2>
 
 Environment variables can be set so **apiurl, app, key,** and/or **nomadurl** parameters do not need to be set:
@@ -17,6 +17,8 @@ Each accepts the following flags:
 
       sample: -query "nomad*runtime*gc_pause_ns"
 - **title** (string) The name of the Cluster
-      -title "Nomad runtime gc_pause_ns"
+
+      sample:  -title "Nomad runtime gc_pause_ns"
 - **tags** (string) Tags to include
-      - such as "creator:api,role:client,service:nomad,data-type:histogram,group:primary"
+
+      sample: - tag "creator:api,role:client,service:nomad,data-type:histogram"
