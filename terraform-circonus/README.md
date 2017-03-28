@@ -1,4 +1,4 @@
-# Terraform & Circonus == `Monitoring as Code`
+# Terraform & Circonus == <b>Monitoring as Code</b>
 
 This is the Terraform repo for all things Circonus. It is actively being built out.
 
