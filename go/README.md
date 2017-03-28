@@ -7,14 +7,6 @@ Environment variables can be set so **apiurl, app, key,** and/or **nomadurl** pa
 - CIRCONUS_API_URL="https://api.circonus.com/v2/"
 - NOMAD_API_URL="http://IP_OF_NOMAD_SERVER:4646/v1/allocations"
 
-Current tools include:
-
-### GO Version for:
-<p>**deactivate-complete-allocs** Deactivation of "Complete" Allocations.</p>
-<p>**create_cgc** - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types accepts the following parameters:</p>
-<p>**create_cluster.go** - Creating a Metric Cluster from a Query</p>
-<p>**create_cluster_and_graph.go** - Creating a Metric Cluster and Graphfrom a Query</p>
-
 Each accepts the following flags:
 
 - **apiurl** (string) Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)
@@ -27,14 +19,4 @@ Each accepts the following flags:
 - **title** (string) The name of the Cluster
       -title "Nomad runtime gc_pause_ns"
 - **tags** (string) Tags to include
-      - tags "creator:api,role:client,service:nomad,data-type:histogram,group:primary"
-
-<p>**delete_checks_by_tag.go** - Delete a set of checks that contain a tag or set of tags</p>
-<p>**delete_clusters_by_tag.go** - Delete a set of clusters that contain a tag or set of tags</p>
-<p>**delete_graphs_by_tag.go** - Delete a set of graphs that contain a tag or set of tags</p>
-
-Accepts **apiurl, app, key,** and **tag**
-
-<p>**deactivate-metrics_by_search.go** - Delete a set of metrics searched for via query string.</p>
-
-Accepts **query*
+      - such as "creator:api,role:client,service:nomad,data-type:histogram,group:primary"
