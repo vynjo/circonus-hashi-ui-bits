@@ -66,7 +66,7 @@ More configuring information, as well as a full stack example, can be found in t
 - <b>delete_clusters_by_tag</b> - Delete all clusters with TAG
 - <b>delete_graphs_by_tag</b> - Delete all clusters with TAG
 
-##E Node.js Versions for:
+## Node.js Versions for:
 - create-cluster.js
 - deactivate-complete-lost-allocs.js
 - deactivate-metrics.js
