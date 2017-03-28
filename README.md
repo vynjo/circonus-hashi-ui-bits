@@ -9,6 +9,53 @@ Current tools include:
 
 [Details here](https://github.com/vynjo/circonus-hashi-ui-bits/tree/master/terraform-circonus)
 
+## Configuration info for your Consul, Nomad or Vault instance
+ - tags are simply samples, please feel free to change accordingly
+ - [API token can be created in your Circonus account](https://login.circonus.com/user/tokens)
+
+### Consul Server - add the following to your server.hcl file:
+```
+{
+	"telemetry": {
+		"circonus_api_token": "CIRCONUS-API-TOKEN"
+		"circonus_check_tags": "type:server, service:consul"
+	}
+}
+```
+### Consul Client - add the following to your client.hcl file:
+```
+{
+	"telemetry": {
+		"circonus_api_token": "CIRCONUS_API_TOKEN"
+		"circonus_check_tags": "type:client, service:consul"
+	}
+}
+```
+### Nomad Client - add the following to your client.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS_API_TOKEN"
+	publish_allocation_metrics = "true"
+	publish_node_metrics = "true"
+	circonus_check_tags = "type:client, service:nomad"
+}
+```
+### Nomad Server - add the following to your server.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS-API-TOKEN"
+	circonus_check_tags = "type:server, service:nomad"
+}
+```
+### And lastly, your Vault Server - add the following to your vault.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS-API-TOKEN"
+	circonus_check_tags = "type:server, service:vault"
+}
+```
+More configuring information, as well as a full stack example, can be found in the hashiconf-napa-2016 github repo
+- https://github.com/vynjo/hashiconf-napa-2016
 ### If you don't want to use Terraform, there are go, and node.js tools as well:
 ### GO Version for:
 - <b>deactivate-complete-allocs</b> Deactivation of "Complete" Allocations.
