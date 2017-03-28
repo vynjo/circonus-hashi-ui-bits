@@ -8,21 +8,21 @@ Current tools include:
 <p>Sample in development</p>
 
 ### GO Version for:
-<p><b>deactivate-complete-allocs</b> Deactivation of "Complete" Allocations.</p>
-<p><b>create_cgc</b> - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types accepts the following parameters:</p>
-<p><b>create_cluster</b> - Creating a Metric Cluster from a Query</p>
-<p><b>create_cluster_and_graph</b> - Creating a Metric Cluster and Graphfrom a Query</p>
+- <b>deactivate-complete-allocs</b> Deactivation of "Complete" Allocations.
+- <b>create_cgc</b> - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types
+- <b>create_cluster</b> - Creating a Metric Cluster from a Query
+- <b>create_cluster_and_graph</b> - Creating a Metric Cluster and Graphfrom a Query
 <p><b>delete_checks_by_tag</b> - Delete all checks with TAG</p>
 <p><b>delete_clusters_by_tag</b> - Delete all clusters with TAG</p>
 <p><b>delete_graphs_by_tag</b> - Delete all clusters with TAG</p>
 
-### Node.js versions for in node directory
-- node/create-cluster.js
-- node/deactivate-complete-lost-allocs.js
-- node/deactivate-metrics.js
-- node/deactivate-complete-allocs.js
-- node/deactivate-lost-allocs.js
-- node/find-running-allocations.js
+### Node.js Versions for:
+- create-cluster.js
+- deactivate-complete-lost-allocs.js
+- deactivate-metrics.js
+- deactivate-complete-allocs.js
+- deactivate-lost-allocs.js
+- find-running-allocations.js
 =======
 Each accepts the following flags:
 
