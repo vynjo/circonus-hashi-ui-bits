@@ -12,9 +12,9 @@ Current tools include:
 - <b>create_cgc</b> - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types
 - <b>create_cluster</b> - Creating a Metric Cluster from a Query
 - <b>create_cluster_and_graph</b> - Creating a Metric Cluster and Graphfrom a Query
-<p><b>delete_checks_by_tag</b> - Delete all checks with TAG</p>
-<p><b>delete_clusters_by_tag</b> - Delete all clusters with TAG</p>
-<p><b>delete_graphs_by_tag</b> - Delete all clusters with TAG</p>
+- <b>delete_checks_by_tag</b> - Delete all checks with TAG
+- <b>delete_clusters_by_tag</b> - Delete all clusters with TAG
+- <b>delete_graphs_by_tag</b> - Delete all clusters with TAG</p>
 
 ### Node.js Versions for:
 - create-cluster.js
@@ -23,29 +23,3 @@ Current tools include:
 - deactivate-complete-allocs.js
 - deactivate-lost-allocs.js
 - find-running-allocations.js
-=======
-Each accepts the following flags:
-
-- **apiurl** (string) Base Circonus API URL [https://api.circonus.com/] (CIRCONUS_API_URL)
-- **app** (string) Circonus API Token App [nomad-metric-reaper] (CIRCONUS_API_APP)
-- **debug** Enable Circonus API debugging
-- **key**	(string) Circonus API Token Key [none] (CIRCONUS_API_KEY)
-- **query** (string) The Query used to search
-
-      sample: -query "nomad*runtime*gc_pause_ns"
-- **title** (string) The name of the Cluster
-      -title "Nomad runtime gc_pause_ns"
-- **tags** (string) Tags to include
-      - tags "creator:api,role:client,service:nomad,data-type:histogram,group:primary"
-
-<p>**delete_checks_by_tag.go** - Delete a set of checks that contain a tag or set of tags</p>
-<p>**delete_clusters_by_tag.go** - Delete a set of clusters that contain a tag or set of tags</p>
-<p>**delete_graphs_by_tag.go** - Delete a set of graphs that contain a tag or set of tags</p>
-
-Accepts **apiurl, app, key,** and **tag**
-
-<p>**deactivate-metrics_by_search.go** - Delete a set of metrics searched for via query string.</p>
-
-Accepts **query*
-
->>>>>>> origin/master
