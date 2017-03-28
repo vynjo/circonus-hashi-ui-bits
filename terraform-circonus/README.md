@@ -1,6 +1,6 @@
 # Terraform & Circonus 
 
-equal <b>Monitoring as Code</b>
+##<b>Monitoring as Code</b>
 
 This is the Terraform repo for all things Circonus. It is actively being built out.
 
