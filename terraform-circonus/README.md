@@ -1,10 +1,10 @@
 # Terraform & Circonus
 
-##<b>Monitoring as Code</b>
+## Monitoring as Code
 
 This is the Terraform repo for all things Circonus. It is actively being built out.
 
-## Usage
+### Usage
 
 There is one directory per Circonus account (e.g. `dev`). This can be duplicated to have identical environments (prod, staging, etc.)
 
