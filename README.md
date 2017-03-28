@@ -5,7 +5,7 @@ Current tools include:
 
 ### Terraform (!!!)
 
-<p>Finally, Monitoring as Code! The Terraform repo for all things Circonus. It is actively being built out.</p>
+<p>Finally, Monitoring as Code as of Terraform 0.9! The Terraform repo for all things Circonus. It is actively being built out.</p>
 
 [Details here](https://github.com/vynjo/circonus-hashi-ui-bits/tree/master/terraform-circonus)
 
