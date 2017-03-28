@@ -27,4 +27,6 @@ Lots of TBD's:
 - MySQL
 - and more circonus check types
 
-Specifics of configuring your Consul, Vault, and Nomad clients and servers for Circonus telemetry can be found in the hashiconf-napa-2016 github repo. Those details will be included here shortly.
+Specifics of configuring your Consul, Vault, and Nomad clients and servers for Circonus telemetry can be found in the hashiconf-napa-2016 github repo
+- https://github.com/vynjo/hashiconf-napa-2016
+Those details will be included here shortly.
