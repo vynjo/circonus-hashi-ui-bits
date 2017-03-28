@@ -8,8 +8,8 @@ Current tools include:
 <p>Sample in development</p>
 
 ### GO Version for:
-<p>**deactivate-complete-allocs** Deactivation of "Complete" Allocations.</p>
-<p>**create_cgc** - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types accepts the following parameters:</p>
+<p><b>deactivate-complete-allocs</b> Deactivation of "Complete" Allocations.</p>
+<p><b>create_cgc</b> - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types accepts the following parameters:</p>
 <p><b>create_cluster</b> - Creating a Metric Cluster from a Query</p>
 <p><b>create_cluster_and_graph</b> - Creating a Metric Cluster and Graphfrom a Query</p>
 <p><b>delete_checks_by_tag</b> - Delete all checks with TAG</p>
