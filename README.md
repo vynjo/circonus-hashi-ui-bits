@@ -1,11 +1,11 @@
 # circonus-hashi-ui-bits
 <h2>Tools for Circonus and Hashicorp integration</h2>
 
-Current tools include:
+Current tools include Terraform, as well as Go and Node.js code (created way before the Terraform integration was available)
 
 ### Terraform (!!!)
 
-<p>Finally, Monitoring as Code as of Terraform 0.9! The Terraform repo for all things Circonus. It is actively being built out.</p>
+<p>Finally, <b>Monitoring as Code</b> as of Terraform 0.9! The Terraform repo for all things Circonus. It is actively being built out.</p>
 
 [Details here](https://github.com/vynjo/circonus-hashi-ui-bits/tree/master/terraform-circonus)
 
