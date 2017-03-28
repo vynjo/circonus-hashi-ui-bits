@@ -30,24 +30,48 @@ Lots of TBD's:
 - and more circonus check types
 
 ## To configure your Consul, Nomad or Vault instances:
-### Nomad Client - add the following to your client.hcl file:
-<code>
-     telemetry {
-	         circonus_api_token = "CIRCONUS_API_TOKEN"
-	         publish_allocation_metrics = "true"
-              publish_node_metrics = "true"
-              circonus_check_tags = "type:client, service:hashistack, service:nomad"
-              circonus_submission_interval = "1s"
-}
-</code>
-### Nomad Server - add the following to your server.hcl file:
-`telemetry {
-	circonus_api_token = "CIRCONUS-API-TOKEN"
-	circonus_check_tags = "type:server, service:hashistack, service:nomad"
-     circonus_submission_interval = "1s"
-}`
 
-Specifics of configuring your Consul, Vault, and Nomad clients and servers for Circonus telemetry can be found in the hashiconf-napa-2016 github repo
+### Consul Server - add the following to your server.hcl file:
+```
+{
+	"telemetry": {
+		"circonus_api_token": "CIRCONUS-API-TOKEN"
+		"circonus_check_tags": "type:server, service:consul"
+	}
+}
+```
+### Consul Client - add the following to your client.hcl file:
+```
+{
+	"telemetry": {
+		"circonus_api_token": "CIRCONUS_API_TOKEN"
+		"circonus_check_tags": "type:client, service:consul"
+	}
+}
+```
+### Nomad Client - add the following to your client.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS_API_TOKEN"
+	publish_allocation_metrics = "true"
+	publish_node_metrics = "true"
+	circonus_check_tags = "type:client, service:nomad"
+}
+```
+### Nomad Server - add the following to your server.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS-API-TOKEN"
+	circonus_check_tags = "type:server, service:nomad"
+}
+```
+### And lastly, your Vault Server - add the following to your vault.hcl file:
+```
+telemetry {
+	circonus_api_token = "CIRCONUS-API-TOKEN"
+	circonus_check_tags = "type:server, service:vault"
+}
+```
+More configuring information, as well as a full stack example, can be found in the hashiconf-napa-2016 github repo
 - https://github.com/vynjo/hashiconf-napa-2016
 
-Those details will be included here shortly.
