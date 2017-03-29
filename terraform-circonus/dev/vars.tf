@@ -4,11 +4,11 @@ variable "aws_secret_access_key" {}*/
 
 variable "circonus_account_name" {
   description = "The name of the Circonus Account"
-  default = "Hashicorp-dev"
+  default = "YOUR ACCOUNT NAME HERE"
 }
 
 variable "circonus_api_token" {
-  default = "2c1518f9-10ae-49b8-9b04-c386616aae09"
+  default = "CIRCONUS_API_TOKEN"
 }
 
 variable "circonus_api_url" {
@@ -16,5 +16,5 @@ variable "circonus_api_url" {
 }
 
 variable "environment" {
-  default = "development"
+  default = "development OR prod, etc. HERE"
 }
