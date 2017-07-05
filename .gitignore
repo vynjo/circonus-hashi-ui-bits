@@ -46,3 +46,5 @@ node/node_modules/stdio/main.js
 node/node_modules/stdio/license
 
 node/node_modules/stdio/lib/util.js
+
+go/cmd/deactivate-metrics_by_search/deactivate-metrics_by_search
