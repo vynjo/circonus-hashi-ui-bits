@@ -18,7 +18,7 @@ Integration tools, configuration examples, and sample of a complete stack implem
 	"telemetry": {
 		"circonus_api_token": "CIRCONUS-API-TOKEN"
 		"circonus_check_tags": "type:server, service:consul"
-          "circonus_submission_interval": "1s"
+          	"circonus_submission_interval": "1s"
 	}
 }
 ```
@@ -28,7 +28,7 @@ Integration tools, configuration examples, and sample of a complete stack implem
 	"telemetry": {
 		"circonus_api_token": "CIRCONUS_API_TOKEN"
 		"circonus_check_tags": "type:client, service:consul"
-          "circonus_submission_interval": "1s"
+          	"circonus_submission_interval": "1s"
 	}
 }
 ```
@@ -37,7 +37,7 @@ Integration tools, configuration examples, and sample of a complete stack implem
 telemetry {
 	circonus_api_token = "CIRCONUS_API_TOKEN"
 	publish_allocation_metrics = "true"
-     circonus_submission_interval = "1s"
+     	circonus_submission_interval = "1s"
 	publish_node_metrics = "true"
 	circonus_check_tags = "type:client, service:nomad"
 }
@@ -47,14 +47,15 @@ telemetry {
 telemetry {
 	circonus_api_token = "CIRCONUS-API-TOKEN"
 	circonus_check_tags = "type:server, service:nomad"
-     circonus_submission_interval = "1s"
-     publish_node_metrics = "true"
+     	circonus_submission_interval = "1s"
+     	publish_node_metrics = "true"
 }
 ```
 ### And lastly, your Vault Server - add the following to your vault.hcl file:
 ```
 telemetry {
 	circonus_api_token = "CIRCONUS-API-TOKEN"
+     	circonus_submission_interval = "1s"
 	circonus_check_tags = "type:server, service:vault"
 }
 ```
