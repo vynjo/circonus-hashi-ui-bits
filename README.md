@@ -63,6 +63,8 @@ More configuring information, as well as a full stack example, can be found in t
 - https://github.com/vynjo/hashiconf-napa-2016
 ### If you don't want to use Terraform, there are go, and node.js tools as well:
 ### GO Version for:
+- <b>activate-metrics_by_search</b> Activate metrics (which are currently available) via search query.
+- <b>deactivate-metrics_by_search</b> Deactivate metrics via search query.
 - <b>deactivate-complete-allocs</b> Deactivation of "Complete" Allocations.
 - <b>create_cgc</b> - Create Cluster, Graph, and CAQL Check for Numeric or Histogram metric types
 - <b>create_cluster</b> - Creating a Metric Cluster from a Query
