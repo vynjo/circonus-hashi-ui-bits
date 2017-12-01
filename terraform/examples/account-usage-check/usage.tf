@@ -14,7 +14,7 @@ variable "usage_tags" {
 resource "circonus_check" "usage" {
   # collectors = ["${var.collectors}"]
   collector {
-    id = "/broker/2512"
+    id = "/broker/1897"
   }
 
   # collector {

@@ -2,16 +2,16 @@
 ### replace vynjo with your account name.
 variable "account_name" {
   description = "The name of the Circonus Account to use"
-  default = "Vynjo"
+  default = "Hashdev"
 }
 variable "circonus_account_name" {
   description = "The name of the Circonus Account"
-  default = "vynjo"
+  default = "Hashdev"
 }
 
 ### Replace with your API Token, either account level or user level tokens work.
 variable "api_token" {
-  default = "9598206a-25fb-c279-f37d-9598206a9598206a"
+  default = "3afcc1bc-eeea-481d-b5de-e0502feba3fa"
 }
 
 variable "circonus_api_url" {
